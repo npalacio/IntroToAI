@@ -1,6 +1,6 @@
 import random
 CONSTANTS = {
-    "GoalState": "123450"
+    "GoalState": "123450",
     "SuccessorLookup": {
         "0": ["L","U"],
         "1": ["L","R","U"],
@@ -14,13 +14,18 @@ CONSTANTS = {
 def ValidateMove(state, invalidEmptySpaceIndices, moveDirection):
     emptySpaceIndex = state.index("0")
     if emptySpaceIndex in invalidEmptySpaceIndices:
-        raise Exception("Invalid state to move " + moveDirection)
+        raise Exception("Invalid state to move " + moveDirection + ": " + state)
 
 def MoveLeft(state):
-    # TODO: Implement
     ValidateMove(state, [2,5], "left")
     emptySpaceIndex = state.index("0")
-    
+    stateAsList = list(state)
+    # If in spot 0, move value in spot 1 to spot 0, "0" to 1
+    # If in spot 1, move value in spot 2 to spot 1, "0" to 2
+    # If in spot 3, move value in spot 4 to spot 3, "0" to 4
+    stateAsList[emptySpaceIndex] = stateAsList[emptySpaceIndex + 1]
+    stateAsList[emptySpaceIndex + 1] = "0"
+    return "".join(stateAsList)
 
 def MoveRight(state):
     # TODO: Implement
@@ -37,6 +42,7 @@ def GetRandomStartingState(goalState, numberOfMoves):
     # Decide how many moves it should take (random?) = m
     # Perform m random valid moves
     # TODO: Implement
+    print("Implement getting random start state")
 
 def GetNextState(state, action):
     # action is string representation
@@ -45,11 +51,11 @@ def GetNextState(state, action):
     # TODO: Implement
     if action == "L":
         return MoveLeft(state)
-    else if action == "R":
+    elif action == "R":
         return MoveRight(state)
-    else if action == "U":
+    elif action == "U":
         return MoveUp(state)
-    else if action == "R":
+    elif action == "R":
         return MoveDown(state)
 
 # Successor and expand function?
@@ -86,12 +92,16 @@ def GetLimitedDSSolution(currNode, currDepth, maxDepth, solutionSequence):
 def GetIterativeDSSolution(startingState, maxDepth):
     # This will actually solve the puzzle using iterative deepening search and return the moves
     # TODO: Implement
+    startingNode = {
+        "state": startingState
+    }
     for currMaxDepth in range(maxDepth):
-        solution = GetLimitedDSSolution(startingState,currMaxDepth)
+        solution = GetLimitedDSSolution(startingNode, 0, currMaxDepth, [])
 
 def PrintSolution(startingState, solution):
     # Prints the solution (sequence of moves)
     # TODO: Implement
+    print("Implement printing solution")
 
 def Main():
     # generate tests
@@ -100,3 +110,5 @@ def Main():
         startingState = GetRandomStartingState(CONSTANTS["GoalState"],numberOfMoves)
         solution = GetIDSSolution(startingState)
         PrintSolution(startingState, solution)
+
+print(MoveLeft("123540"))
