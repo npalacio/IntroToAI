@@ -1,4 +1,3 @@
-import os
 import random
 
 CONSTANTS = {
@@ -124,8 +123,8 @@ def GetIterativeDSSolution(startingState, maxDepth):
     return None
 
 def PrintSolution(solution):
-    print("Goal state is: " + CONSTANTS["GoalState"])
-    print("Moves: " + "-".join(solution))
+    print("Goal state is " + CONSTANTS["GoalState"])
+    print("Solution: " + "-".join(solution))
 
 def PrintState(state):
     print("State:")
@@ -142,7 +141,7 @@ def ValidateState(state):
             raise Exception("Invalid character in state: " + value)
 
 def Main():
-    startingState = input("Please input starting state..." + os.linesep)
+    startingState = input("Please input starting state: ")
     ValidateState(startingState)
     solution = GetIterativeDSSolution(startingState, CONSTANTS["MaxDepth"])
     if solution != None:
