@@ -11,31 +11,42 @@ CONSTANTS = {
     }
 }
 
-def ValidateMove(state, invalidEmptySpaceIndices, moveDirection):
-    emptySpaceIndex = state.index("0")
+def ValidateMove(state, emptySpaceIndex, invalidEmptySpaceIndices, moveDirection):
     if emptySpaceIndex in invalidEmptySpaceIndices:
-        raise Exception("Invalid state to move " + moveDirection + ": " + state)
+        PrintState(state)
+        raise Exception("Invalid state to move " + moveDirection)
 
 def MoveLeft(state):
-    ValidateMove(state, [2,5], "left")
     emptySpaceIndex = state.index("0")
+    ValidateMove(state, emptySpaceIndex, [2,5], "left")
     stateAsList = list(state)
-    # If in spot 0, move value in spot 1 to spot 0, "0" to 1
-    # If in spot 1, move value in spot 2 to spot 1, "0" to 2
-    # If in spot 3, move value in spot 4 to spot 3, "0" to 4
     stateAsList[emptySpaceIndex] = stateAsList[emptySpaceIndex + 1]
     stateAsList[emptySpaceIndex + 1] = "0"
     return "".join(stateAsList)
 
 def MoveRight(state):
-    # TODO: Implement
-    ValidateMove(state, [0,3], "right")
+    emptySpaceIndex = state.index("0")
+    ValidateMove(state, emptySpaceIndex, [0,3], "right")
+    stateAsList = list(state)
+    stateAsList[emptySpaceIndex] = stateAsList[emptySpaceIndex - 1]
+    stateAsList[emptySpaceIndex - 1] = "0"
+    return "".join(stateAsList)
+
 def MoveUp(state):
-    # TODO: Implement
-    ValidateMove(state, [3,4,5], "up")
+    emptySpaceIndex = state.index("0")
+    ValidateMove(state, emptySpaceIndex, [3,4,5], "up")
+    stateAsList = list(state)
+    stateAsList[emptySpaceIndex] = stateAsList[emptySpaceIndex + 3]
+    stateAsList[emptySpaceIndex + 3] = "0"
+    return "".join(stateAsList)
+
 def MoveDown(state):
-    # TODO: Implement
-    ValidateMove(state, [0,1,2], "down")
+    emptySpaceIndex = state.index("0")
+    ValidateMove(state, emptySpaceIndex, [0,1,2], "down")
+    stateAsList = list(state)
+    stateAsList[emptySpaceIndex] = stateAsList[emptySpaceIndex - 3]
+    stateAsList[emptySpaceIndex - 3] = "0"
+    return "".join(stateAsList)
 
 def GetRandomStartingState(goalState, numberOfMoves):
     # Start with end state
@@ -103,6 +114,11 @@ def PrintSolution(startingState, solution):
     # TODO: Implement
     print("Implement printing solution")
 
+def PrintState(state):
+    print("State:")
+    print(state[:3])
+    print(state[-3:])
+
 def Main():
     # generate tests
     for runNumber in range(10):
@@ -111,4 +127,10 @@ def Main():
         solution = GetIDSSolution(startingState)
         PrintSolution(startingState, solution)
 
-print(MoveLeft("123540"))
+# print(MoveLeft("123540"))
+# print(MoveRight("123540"))
+# print(MoveRight("123045")) #exc
+# PrintState(MoveRight("130245"))
+# PrintState(MoveUp("130245"))
+# PrintState(MoveUp("035241"))
+PrintState(MoveDown("235410"))
