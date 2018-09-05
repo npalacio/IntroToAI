@@ -55,7 +55,18 @@ def GetRandomStartingState(goalState, numberOfMoves):
     # Perform m random valid moves
     # TODO: Implement
     print("Implement getting random start state")
-
+    moves = []
+    currState = goalState
+    for i in range(numberOfMoves):
+        randomMoveNumber = random.randint(1,4)
+        successors = Successor(currState)
+        randomSuccessor = successors[randomMoveNumber % len(successors)]
+        moves.append(randomSuccessor[0])
+        currState = randomSuccessor[1]
+    return {
+        "state": currState,
+        "solution": list(reversed(moves))
+    }
 
 def GetNextState(state, action):
     if action == "L":
@@ -109,8 +120,8 @@ def GetIterativeDSSolution(startingState, maxDepth):
             return solution
     return None
 
-def PrintSolution(startingState, solution):
-    print("Goal state is " + CONSTANTS["GoalState"])
+def PrintSolution(solution):
+    print("Goal state is: " + CONSTANTS["GoalState"])
     print("-".join(solution))
 
 def PrintState(state):
@@ -120,14 +131,16 @@ def PrintState(state):
 
 def Main():
     # generate tests
-    startingState = "431502"
-    solution = GetIterativeDSSolution(startingState, CONSTANTS["MaxDepth"])
-    PrintSolution(startingState, solution)
-    # for runNumber in range(10):
-    #     numberOfMoves = random.randint(1,10)
-    #     startingState = GetRandomStartingState(CONSTANTS["GoalState"],numberOfMoves)
-    #     solution = GetIDSSolution(startingState)
-    #     PrintSolution(startingState, solution)
+    # startingState = "431502"
+    # solution = GetIterativeDSSolution(startingState, CONSTANTS["MaxDepth"])
+    # PrintSolution(startingState, solution)
+    for runNumber in range(3):
+        numberOfMoves = random.randint(1,10)
+        start = GetRandomStartingState(CONSTANTS["GoalState"],numberOfMoves)
+        solution = GetIterativeDSSolution(start["state"], CONSTANTS["MaxDepth"])
+        print("Starting state is: " + start["state"])
+        print("Expected solution is: " + "-".join(start["solution"]))
+        PrintSolution(solution)
 
 # print(MoveLeft("123540"))
 # print(MoveRight("123540"))
