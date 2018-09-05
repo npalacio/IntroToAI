@@ -1,4 +1,6 @@
+import os
 import random
+
 CONSTANTS = {
     "GoalState": "123450",
     "SuccessorLookup": {
@@ -9,8 +11,9 @@ CONSTANTS = {
         "4": ["L","R","D"],
         "5": ["R","D"]
     },
-    "MaxDepth": 10
+    "MaxDepth": 20
 }
+VisitedStates = []
 
 def ValidateMove(state, emptySpaceIndex, invalidEmptySpaceIndices, moveDirection):
     if emptySpaceIndex in invalidEmptySpaceIndices:
@@ -49,24 +52,23 @@ def MoveDown(state):
     stateAsList[emptySpaceIndex - 3] = "0"
     return "".join(stateAsList)
 
-def GetRandomStartingState(goalState, numberOfMoves):
-    # Start with end state
-    # Decide how many moves it should take (random?) = m
-    # Perform m random valid moves
-    # TODO: Implement
-    print("Implement getting random start state")
-    moves = []
-    currState = goalState
-    for i in range(numberOfMoves):
-        randomMoveNumber = random.randint(1,4)
-        successors = Successor(currState)
-        randomSuccessor = successors[randomMoveNumber % len(successors)]
-        moves.append(randomSuccessor[0])
-        currState = randomSuccessor[1]
-    return {
-        "state": currState,
-        "solution": list(reversed(moves))
-    }
+# def GetRandomStartingState(goalState, numberOfMoves):
+#     # Start with end state
+#     # Decide how many moves it should take (random?) = m
+#     # Perform m random valid moves
+#     print("Implement getting random start state")
+#     moves = []
+#     currState = goalState
+#     for i in range(numberOfMoves):
+#         randomMoveNumber = random.randint(1,4)
+#         successors = Successor(currState)
+#         randomSuccessor = successors[randomMoveNumber % len(successors)]
+#         moves.append(randomSuccessor[0])
+#         currState = randomSuccessor[1]
+#     return {
+#         "state": currState,
+#         "solution": list(reversed(moves))
+#     }
 
 def GetNextState(state, action):
     if action == "L":
@@ -93,7 +95,7 @@ def Expand(state):
         "state": state
     }
 
-def GetLimitedDSSolution(currNode, currDepth, maxDepth, solutionSequence):
+def GetLimitedDSSolution(currNode, currDepth, maxDepth, solutionSequence, visitedStates):
     # Take node (state), check if it is goal state
     if currNode["state"] == CONSTANTS["GoalState"]:
         return solutionSequence
@@ -103,50 +105,49 @@ def GetLimitedDSSolution(currNode, currDepth, maxDepth, solutionSequence):
         # Get successors and put on a stack
         successors = Successor(currNode["state"])
         for successor in successors:
-            newNode = Expand(successor[1])
-            solution = GetLimitedDSSolution(newNode, currDepth + 1, maxDepth, solutionSequence + [successor[0]])
-            if solution != None:
-                return solution
+            if successor[1] not in visitedStates:
+                newNode = Expand(successor[1])
+                solution = GetLimitedDSSolution(newNode, currDepth + 1, maxDepth, solutionSequence + [successor[0]], visitedStates + [successor[1]])
+                if solution != None:
+                    return solution
     # If we explored as far as we can with this node without finding a solution, return none
     return None
 
 def GetIterativeDSSolution(startingState, maxDepth):
-    # This will actually solve the puzzle using iterative deepening search and return the moves
-    # TODO: Implement
     startingNode = Expand(startingState)
     for currMaxDepth in range(maxDepth):
-        solution = GetLimitedDSSolution(startingNode, 0, currMaxDepth, [])
+        VisitedStates.append(startingState)
+        solution = GetLimitedDSSolution(startingNode, 0, currMaxDepth, [], [])
         if solution != None:
             return solution
+        del VisitedStates[:]
     return None
 
 def PrintSolution(solution):
     print("Goal state is: " + CONSTANTS["GoalState"])
-    print("-".join(solution))
+    print("Moves: " + "-".join(solution))
 
 def PrintState(state):
     print("State:")
     print(state[:3])
     print(state[-3:])
 
-def Main():
-    # generate tests
-    # startingState = "431502"
-    # solution = GetIterativeDSSolution(startingState, CONSTANTS["MaxDepth"])
-    # PrintSolution(startingState, solution)
-    for runNumber in range(3):
-        numberOfMoves = random.randint(1,10)
-        start = GetRandomStartingState(CONSTANTS["GoalState"],numberOfMoves)
-        solution = GetIterativeDSSolution(start["state"], CONSTANTS["MaxDepth"])
-        print("Starting state is: " + start["state"])
-        print("Expected solution is: " + "-".join(start["solution"]))
-        PrintSolution(solution)
+def ValidateState(state):
+    stateAsList = list(state)
+    goalStateAsList = list(CONSTANTS["GoalState"])
+    if len(stateAsList) != len(goalStateAsList):
+        raise Exception("Invalid state length")
+    for value in stateAsList:
+        if value not in goalStateAsList:
+            raise Exception("Invalid character in state: " + value)
 
-# print(MoveLeft("123540"))
-# print(MoveRight("123540"))
-# print(MoveRight("123045")) #exc
-# PrintState(MoveRight("130245"))
-# PrintState(MoveUp("130245"))
-# PrintState(MoveUp("035241"))
-# PrintState(MoveDown("235410"))
+def Main():
+    startingState = input("Please input starting state..." + os.linesep)
+    ValidateState(startingState)
+    solution = GetIterativeDSSolution(startingState, CONSTANTS["MaxDepth"])
+    if solution != None:
+        PrintSolution(solution)
+    else:
+        print("No solution could be found using Iterative Deepening Search with a max depth of " + str(CONSTANTS["MaxDepth"]))
+
 Main()
