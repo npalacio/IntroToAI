@@ -11,7 +11,8 @@ CONSTANTS = {
         "6": ["L","D"],
         "7": ["L","R","D"],
         "8": ["R","D"]
-    }
+    },
+    "MaxIterations": 10000
 }
 
 def ValidateMove(state, emptySpaceIndex, invalidEmptySpaceIndices, moveDirection):
@@ -109,9 +110,10 @@ def GetAStarSolution(startingState):
     q = []
     # Entry count is used as a tiebreaker for nodes with identical total costs
     entryCount = 0
+    iteration = 0
     currNode = Expand(startingState, None, None, 0)
     # Iterate while q is not empty
-    while currNode != None:
+    while currNode != None and iteration < CONSTANTS["MaxIterations"]:
         # Check if node is goal state
         if currNode["state"] == CONSTANTS["GoalState"]:
             return GetSolution(currNode)
@@ -127,6 +129,7 @@ def GetAStarSolution(startingState):
             entryCount += 1
         # Dequeue next node
         currNode = heapq.heappop(q)[2]
+        iteration += 1
 
 def PrintSolution(solution):
     print("Goal state is " + CONSTANTS["GoalState"])
@@ -155,7 +158,6 @@ def Main():
     if solution != None:
         PrintSolution(solution)
     else:
-        print("No solution could be found using Iterative Deepening Search with a max depth of " + str(CONSTANTS["MaxDepth"]))
+        print("No solution could be found using A* Search with a max depth of " + str(CONSTANTS["MaxIterations"]))
 
-# print(GetCostToGoal("023456178"))
 Main()
