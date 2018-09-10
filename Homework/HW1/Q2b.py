@@ -86,7 +86,28 @@ def GetCostSoFar(node):
 
 # Heuristic function
 def GetCostToGoal(node):
-    print("implement")
+    # Need to calculate Manhattan distance for each tile and sum them up
+    total = 0
+    for tile in list(node["state"]):
+        if tile == "0": 
+            continue
+        total += GetManhattanDistance(tile, node["state"], CONSTANTS["GoalState"])
+    return total
+
+def GetManhattanDistance(tile, state, goalState):
+    tileIndex = state.index(tile)
+    goalIndex = goalState.index(tile)
+    if tileIndex == goalIndex:
+        return 0
+    horizontalDistance = GetHorizontalDistance(tileIndex, goalIndex)
+    verticalDistance = GetVerticalDistance(tileIndex, goalIndex)
+    return horizontalDistance + verticalDistance
+
+def GetHorizontalDistance(tileIndex, goalStateIndex):
+    return abs((tileIndex % 3) - (goalStateIndex % 3))
+
+def GetVerticalDistance(tileIndex, goalStateIndex):
+    return abs((tileIndex // 3) - (goalStateIndex // 3))
 
 def GetSolution(finalNode):
     solution = []
