@@ -141,7 +141,7 @@ def ValidateState(state):
             raise Exception("Invalid character in state: " + value)
 
 def Main():
-    startingState = input("Please input starting state: ")
+    startingState = str(input("Please input starting state: "))
     ValidateState(startingState)
     solution = GetIterativeDSSolution(startingState, CONSTANTS["MaxDepth"])
     if solution != None:

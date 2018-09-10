@@ -86,14 +86,7 @@ def GetCostSoFar(node):
 
 # Heuristic function
 def GetCostToGoal(node):
-    # Calculate how many tiles are not in correct place (exclude 0 tile)
-    numberOutOfPlace = 0
-    goalState = list(CONSTANTS["GoalState"])
-    currState = list(node["state"])
-    for i in range(len(goalState)):
-        if goalState[i] != "0" and goalState[i] != currState[i]:
-            numberOutOfPlace += 1
-    return numberOutOfPlace
+    print("implement")
 
 def GetSolution(finalNode):
     solution = []
