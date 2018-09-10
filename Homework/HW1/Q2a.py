@@ -10,12 +10,58 @@ CONSTANTS = {
         "5": ["R","U","D"],
         "6": ["L","D"],
         "7": ["L","R","D"],
-        "8": ["L","R"]
+        "8": ["R","D"]
     }
 }
 
+def ValidateMove(state, emptySpaceIndex, invalidEmptySpaceIndices, moveDirection):
+    if emptySpaceIndex in invalidEmptySpaceIndices:
+        PrintState(state)
+        raise Exception("Invalid state to move " + moveDirection)
+
+def MoveLeft(state):
+    emptySpaceIndex = state.index("0")
+    ValidateMove(state, emptySpaceIndex, [2,5,8], "left")
+    stateAsList = list(state)
+    stateAsList[emptySpaceIndex] = stateAsList[emptySpaceIndex + 1]
+    stateAsList[emptySpaceIndex + 1] = "0"
+    return "".join(stateAsList)
+
+def MoveRight(state):
+    emptySpaceIndex = state.index("0")
+    ValidateMove(state, emptySpaceIndex, [0,3,6], "right")
+    stateAsList = list(state)
+    stateAsList[emptySpaceIndex] = stateAsList[emptySpaceIndex - 1]
+    stateAsList[emptySpaceIndex - 1] = "0"
+    return "".join(stateAsList)
+
+def MoveUp(state):
+    emptySpaceIndex = state.index("0")
+    ValidateMove(state, emptySpaceIndex, [6,7,8], "up")
+    stateAsList = list(state)
+    stateAsList[emptySpaceIndex] = stateAsList[emptySpaceIndex + 3]
+    stateAsList[emptySpaceIndex + 3] = "0"
+    return "".join(stateAsList)
+
+def MoveDown(state):
+    emptySpaceIndex = state.index("0")
+    ValidateMove(state, emptySpaceIndex, [0,1,2], "down")
+    stateAsList = list(state)
+    stateAsList[emptySpaceIndex] = stateAsList[emptySpaceIndex - 3]
+    stateAsList[emptySpaceIndex - 3] = "0"
+    return "".join(stateAsList)
+
+def GetNextState(state, action):
+    if action == "L":
+        return MoveLeft(state)
+    elif action == "R":
+        return MoveRight(state)
+    elif action == "U":
+        return MoveUp(state)
+    elif action == "D":
+        return MoveDown(state)
+
 def Successor(currState):
-    print("Implement")
     # Returns list of (action,resultState) pairs
     emptySpaceIndex = currState.index("0")
     availableMoves = CONSTANTS["SuccessorLookup"][str(emptySpaceIndex)]
@@ -38,35 +84,49 @@ def GetCostSoFar(node):
     return node["depth"]
 
 # Heuristic function
-def GetCostToGoal(state):
+def GetCostToGoal(node):
     # Calculate how many tiles are not in correct place (exclude 0 tile)
     numberOutOfPlace = 0
     goalState = list(CONSTANTS["GoalState"])
-    currState = list(state)
+    currState = list(node["state"])
     for i in range(len(goalState)):
         if goalState[i] != "0" and goalState[i] != currState[i]:
             numberOutOfPlace += 1
     return numberOutOfPlace
 
+def GetSolution(finalNode):
+    solution = []
+    currNode = finalNode
+    while currNode != None:
+        if currNode["arrivalAction"] == None:
+            return list(reversed(solution))
+        solution.append(currNode["arrivalAction"])
+        currNode = currNode["parent"]
+    return list(reversed(solution))
+
 def GetAStarSolution(startingState):
     # Initialize priority q
     q = []
+    # Entry count is used as a tiebreaker for nodes with identical total costs
     entryCount = 0
-    startingNode = Expand(startingState, None, None, 0)
-    heapq.heappush(q,(0, entryCount, startingNode))
-    entryCount += 1
-    currNode = heapq.heappop(q)
+    currNode = Expand(startingState, None, None, 0)
     # Iterate while q is not empty
     while currNode != None:
-        # Dequeue node, get its children (successors from this state)
-        # Will each child need to keep track of its parent as well as the action that generated itself? 
-        # Then at end when we have reached our goal node we can back track to get its ancestry (i.e. solution)?
+        # Check if node is goal state
+        if currNode["state"] == CONSTANTS["GoalState"]:
+            return GetSolution(currNode)
+        # Get its children (successors from this state)
         successors = Successor(currNode["state"])
         # Push children on q, maintaining order
         for successor in successors:
             newNode = Expand(successor[1], currNode, successor[0], currNode["depth"] + 1)
             costSoFar = GetCostSoFar(newNode)
             costToGoal = GetCostToGoal(newNode)
+            totalCost = costSoFar + costToGoal
+            heapq.heappush(q, (totalCost, entryCount, newNode))
+            entryCount += 1
+        # Dequeue next node
+        currNode = heapq.heappop(q)[2]
 
 def PrintSolution(solution):
     print("Goal state is " + CONSTANTS["GoalState"])
@@ -96,3 +156,6 @@ def Main():
         PrintSolution(solution)
     else:
         print("No solution could be found using Iterative Deepening Search with a max depth of " + str(CONSTANTS["MaxDepth"]))
+
+# print(GetCostToGoal("023456178"))
+Main()
