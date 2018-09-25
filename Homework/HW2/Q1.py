@@ -5,17 +5,29 @@ CONSTANTS = {
     "GoalFitness": 28
 }
 
+def GetGoalStateChild(options):
+    print("Implement GetGoalStateChild")
+    # Return none if no goal state children
+    # Otherwise return just the child (state)
+
+def CalculateFitnesses(options):
+    print("Implement calculate fitnesses")
+    # Should return dict of child and their fitness
+
+def Reproduce(options):
+    print("Implement get parents")
+    # Given a set of parents, reproduce using the crossover operator specified
+
 def GetHorizontalAttackers(options):
     print("Implement GetHorizontalAttackers")
 
 def GetHorizontalAttackers(options):
     print("Implement GetDiagonalAttackers")
 
-def AddToQueue(options):
-    popSize = len(options["population"])
-    heapq.heappush(options["population"], (options["childFitness"], popSize + 1, options["child"]))
+def AddChildrenToQueue(options):
+    print("Implement AddChildrenToQueue")
+    # heapq.heappush(options["population"], (options["childFitness"], popSize + 1, options["child"]))
     # Should return updated list (queue)
-    return options["population"]
 
 def Fitness(state):
     stateAsList = list(state)
@@ -35,24 +47,32 @@ def Fitness(state):
 
 def Mutate(options):
     print("Implement Mutate")
+    # Should mutate a set of children
 
-def GetChild(options):
-    print("Implement get child")
+def GetParents(options):
+    print("Implement get parents")
+    # Should return n parents probabalistically based on fitness
+    # Select n parents based on probabilistic distribution of their fitness functions
+
+def GenerateChildren(options):
+    print("Implement generate children")
+    parents = GetParents({
+        "population": options["population"],
+        "chromosomesPerIteration": options["chromosomesPerIteration"]
+    })
+    children = Reproduce({
+        "parents": parents,
+        "crossoverOperator": options["crossoverOperator"]
+    })
     # How do we use chromosomesPerIteration?
         # How many new children are we generating based on this?
-    # parent1 = GetNextParent({
-    #     "population": population
-    # })
-    # parent2 = GetNextParent({
-    #     "population": population
-    # })
-    # child = Mutate({
-    #     "child": child,
-    #     "mutationRate": mutationRate
-    # })
-
-# def GetNextParent(options):
-#     return heapq.heappop(options["population"])[2]
+        # Create n chromosomes here, pick top n chromosomes based on fitness function,
+        # reproduce by probablistically picking 2 to crossover initially (you replace one of the ones you selected with these 2 children, else )
+        # Then crossover the rest of the pairs
+    children = Mutate({
+        "children": children,
+        "mutationRate": mutationRate
+    })
 
 def PrintSolution(options):
     print("Implement print solution")
@@ -66,7 +86,7 @@ def GetSolution(options):
     while true:
         # How do I select what 2 states to reproduce with?
         # Get the top 2 from pop based on their fitness function values
-        child = GetChild({
+        children = GenerateChildren({
             "population": population,
             "chromosomesPerIteration": options["chromosomesPerIteration"],
             "crossoverOperator": options["crossoverOperator"],
@@ -80,14 +100,18 @@ def GetSolution(options):
             iterationCount += 1
         else:
             # Only return when our child is a goal state
-            childFitness = Fitness(child)
-            if childFitness >= CONSTANTS["GoalFitness"]:
-                return child
+            childrenWithFitness = CalculateFitnesses({
+                "children": children
+            })
+            goalStateChild = GetGoalStateChild({
+                "childrenWithFitness": childrenWithFitness
+            })
+            if goalStateChild != None:
+                return goalStateChild
             else:
                 # Add child to q
-                population = AddToQueue({
-                    "child": child,
-                    "childFitness": childFitness,
+                population = AddChildrenToQueue({
+                    "childrenWithFitness": childrenWithFitness,
                     "population": population
                 })
 
