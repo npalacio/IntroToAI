@@ -121,8 +121,7 @@ def AddChildrenToQueue(options):
     population = options["population"]
 
     # Should return updated list (queue)
-    popSize = len(population)
-    currIndex = popSize + 1
+    currIndex = len(population)
     for child in childrenWithFitness:
         heapq.heappush(population, (child["fitness"], currIndex, child["child"]))
         currIndex += 1
@@ -158,20 +157,18 @@ def Mutate(options):
         if mutationRate > randomNum:
             # Randomly change one of its values
             indexToMutate = random.randint(0,CONSTANTS["LengthOfState"] - 1)
-            newValue = str(random.randint(0,CONSTANTS["RangeOfStateValues"] - 1))
+            newValue = str(random.randint(1,CONSTANTS["RangeOfStateValues"]))
             stateAsList = list(child)
             stateAsList[indexToMutate] = newValue
             newChild = "".join(stateAsList)
         newChildren.append(newChild)
     return newChildren
 
-    # Should mutate a set of children and return new list
-
 def GetParentIndexByDistribution(options):
     # Expected params
     popWithDistr = options["populationWithDistribution"]
 
-    randomNum = random.randint(0,100000) / 100000
+    randomNum = random.randint(0,99999999) / 100000000
     # Could I keep adding up the children percentages until I go higher than the random number?
     currSum = 0
     # for child in popWithDistr:
@@ -194,9 +191,9 @@ def GetParentsByDistribution(options):
     parents = []
     for i in range(chromosomesPerIteration):
         newParentIndex = GetParentIndexByDistribution({
-            "populationWithDistribution": popWithDistr
+            "populationWithDistribution": populationWithDistribution
         })
-        parents.append(popWithDistr[newParentIndex])
+        parents.append(populationWithDistribution[newParentIndex])
         # Once I get a parent I need to make sure I dont select it again
         del population[newParentIndex]
         # Need to recalculate distribution everytime
@@ -218,20 +215,11 @@ def GetParents(options):
     population = options["population"]
     chromosomesPerIteration = options["chromosomesPerIteration"]
 
-    # Should return n parents probabalistically based on fitness
-    # Select n parents based on probabilistic distribution of their fitness functions
-    # sumOfFitnessValues = sum([x[0] for x in population])
-    # Get sum of all fitness values, use this to calculate each ones distribution
-    # populationWithDistribution = [{"child": x[2], "distribution": x[0] / sumOfFitnessValues} for x in population]
-    # populationWithDistribution = GetChildrenWithDistribution({
-    #     "population": population
-    # })
     parents = GetParentsByDistribution({
         "population": population,
-        # "populationWithDistribution": populationWithDistribution,
         "chromosomesPerIteration": chromosomesPerIteration
     })
-    return parents
+    return [parent["child"] for parent in parents]
 
 def GenerateChildren(options):
     # Expected params
@@ -269,7 +257,7 @@ def PrintSolution(options):
     finalState = options["solution"]["finalState"]
     finalStateFitness = options["solution"]["finalStateFitness"]
     iterations = options["solution"]["iterations"]
-    initialPopSize = len(options["parameters"]["initialPopulation"])
+    initialPopSize = options["parameters"]["initialPopSize"]
     chromosomesPerIteration = options["parameters"]["chromosomesPerIteration"]
     mutationRate = options["parameters"]["mutationRate"]
     maxIterations = options["parameters"]["maxIterations"]
@@ -315,7 +303,8 @@ def GetSolution(options):
         if isIterationLimit:
             if iterationCount >= maxIterations:
                 # We are done iterating, return our best
-                finalState = heapq.heappop(population)[2]
+                finalState = heapq.nlargest(1,population)[0][2]
+                # finalState = heapq.heappop(population)[2]
                 return {
                     "finalState": finalState,
                     "finalStateFitness": Fitness(finalState),
@@ -353,9 +342,7 @@ def GetInitialPopulation(options):
         state = "".join(stateAsList)
         stateFitness = Fitness(state)
         if stateFitness < CONSTANTS["GoalFitness"]:
-            # heapq.heappush(population, (child["fitness"], currIndex, child["child"]))
             heapq.heappush(population, (stateFitness, populationSize, state))
-            # population.append(state)
             populationSize += 1
     return population
 
@@ -367,6 +354,7 @@ def Solve(options):
         "initialSize": initialPopSize
     })
 
+    initialPopSize = len(initialPop)
     # Get solution
     parameters = {
         "initialPopulation": initialPop,
@@ -376,6 +364,7 @@ def Solve(options):
         "crossoverOperator": options["crossoverOperator"]
     }
     solution = GetSolution(parameters)
+    parameters["initialPopSize"] = initialPopSize
 
     # Print solution
     PrintSolution({
@@ -419,7 +408,7 @@ def Main():
             "maxIterations": inputs["maxIterations"],
             "crossoverOperator": crossoverOperator
         })
-        willContinue = input("Type Y to try another scenario") == "Y"
+        willContinue = input("Type Y to try another scenario:" + os.linesep) == "Y"
 
 # Fitness("32752411")
 # Fitness("24748552")
