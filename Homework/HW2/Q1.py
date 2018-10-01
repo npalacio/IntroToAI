@@ -8,6 +8,28 @@ CONSTANTS = {
     "RangeOfStateValues": 8
 }
 
+def UniformCrossover(options):
+    # Expected params
+    parent1AsList = list(options["parent1"])
+    parent2AsList = list(options["parent2"])
+    
+    parent1Fitness = Fitness(options["parent1"])
+    parent2Fitness = Fitness(options["parent1"])
+    parent1Ratio = parent1Fitness / (parent1Fitness + parent2Fitness)
+
+    child1 = []
+    child2 = []
+    for i in range(CONSTANTS["LengthOfState"]):
+        randomNum = random.randint(0,99999999) / 100000000
+        if parent1Ratio > randomNum:
+            child1.append(parent1AsList[i])
+            child2.append(parent2AsList[i])
+        else:
+            child1.append(parent2AsList[i])
+            child2.append(parent1AsList[i])
+    return ["".join(child1),"".join(child2)]
+
+
 def TwoPointCrossover(options):
     # Expected params
     parent1AsList = list(options["parent1"])
@@ -44,7 +66,6 @@ def ReproduceWithParents(options):
             "parent2": parent2
         })
     elif crossoverOperator == 1:
-        print("Implement twpoPoint crossover")
         return TwoPointCrossover({
             "parent1": parent1,
             "parent2": parent2
@@ -52,7 +73,10 @@ def ReproduceWithParents(options):
     elif crossoverOperator == 2:
         print("Implement cut and splice crossover")
     elif crossoverOperator == 3:
-        print("Implement uniform crossover")
+        return UniformCrossover({
+            "parent1": parent1,
+            "parent2": parent2
+        })
 
 def GetGoalStateChild(options):
     # Expected params
@@ -178,19 +202,6 @@ def Mutate(options):
         newChildren.append(newChild)
     return newChildren
 
-# def GetParentIndexByDistribution(options):
-#     # Expected params
-#     popWithDistr = options["populationWithDistribution"]
-
-#     randomNum = random.randint(0,99999999) / 100000000
-#     # Could I keep adding up the children percentages until I go higher than the random number?
-#     currSum = 0
-#     # for child in popWithDistr:
-#     for i in range(len(popWithDistr)):
-#         currChild = popWithDistr[i]
-#         currSum += currChild["distribution"]
-#         if currSum > randomNum:
-#             return i
 def GetParentsWithDistribution(options):
     # Expected params
     popWithDistr = options["populationWithDistribution"]
@@ -209,29 +220,6 @@ def GetParentsWithDistribution(options):
                     parents.append(currChild["child"])
                 break
     return parents
-
-# def GetParentsByDistribution(options):
-#     # Expected params
-#     chromosomesPerIteration = options["chromosomesPerIteration"]
-#     population = options["population"].copy()
-
-#     populationWithDistribution = GetChildrenWithDistribution({
-#         "population": population
-#     })
-
-#     parents = []
-#     for i in range(chromosomesPerIteration):
-#         newParentIndex = GetParentIndexByDistribution({
-#             "populationWithDistribution": populationWithDistribution
-#         })
-#         parents.append(populationWithDistribution[newParentIndex])
-#         # Once I get a parent I need to make sure I dont select it again
-#         del population[newParentIndex]
-#         # Need to recalculate distribution everytime
-#         populationWithDistribution = GetChildrenWithDistribution({
-#             "population": population
-#         })
-#     return parents
 
 def GetParentsByDistribution(options):
     # Expected params
@@ -310,7 +298,8 @@ def PrintSolution(options):
     maxIterations = options["parameters"]["maxIterations"]
     crossoverOperator = options["parameters"]["crossoverOperator"]
 
-    print("Solution found with the following parameters:" + os.linesep)
+    print("")
+    print("Solution found with the following parameters:")
     parameterString = "Initial Population Size: " + str(initialPopSize)
     parameterString += ", Chromosomes generated per iteration: " + str(chromosomesPerIteration)
     parameterString += ", MutationRate: " + str(mutationRate)
@@ -321,6 +310,7 @@ def PrintSolution(options):
     print("Iterations used: " + str(iterations))
     print("Final State: " + str(finalState))
     print("Final State Fitness: " + str(finalStateFitness))
+    print("")
 
 def GetSolution(options):
     # Expected params
@@ -420,8 +410,10 @@ def Solve(options):
     })
 
 def GetCrossoverOperator():
-    algorithm = input("Please specify crossover operator:" + os.linesep + "Single point = 0" + os.linesep + "Two point = 1" + os.linesep + "Cut and splice = 2" + os.linesep + "Uniform = 3" + os.linesep)
-    return int(algorithm)
+    algorithm = int(input(os.linesep + "Please specify crossover operator:" + os.linesep + "Single point = 0" + os.linesep + "Two point = 1" + os.linesep + "Cut and splice = 2" + os.linesep + "Uniform = 3" + os.linesep + "Exit = 4" + os.linesep))
+    if algorithm > 4 or algorithm < 0:
+        raise Exception("Please enter a valid option")
+    return algorithm
 
 def GetInputs():
     inputs = input("Please provide the following parameters separated by a space: <Initial population size> <Number of chromosomes to select per iteration> <Mutation Rate> <Number of iterations to run for>:" + os.linesep)
@@ -443,11 +435,12 @@ def GetInputs():
     }
 
 def Main():
-    willContinue = True
-    while willContinue:
+    inputs = GetInputs()
+    while True:
         # Prompt user for inputs
-        inputs = GetInputs()
         crossoverOperator = GetCrossoverOperator()
+        if crossoverOperator == 4:
+            break
         Solve({
             "initialPopulationSize": inputs["initialPopulationSize"],
             "chromosomesPerIteration": inputs["chromosomesPerIteration"],
@@ -455,7 +448,6 @@ def Main():
             "maxIterations": inputs["maxIterations"],
             "crossoverOperator": crossoverOperator
         })
-        willContinue = input("Type Y to try another scenario:" + os.linesep) == "Y"
 
 # Fitness("32752411")
 # Fitness("24748552")
@@ -463,7 +455,7 @@ def Main():
 #     "parent1": "32543213",
 #     "parent2": "31234523"
 # })
-# TwoPointCrossover({
+# UniformCrossover({
 #     "parent1": "45798432",
 #     "parent2": "98672546"
 # })
