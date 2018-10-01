@@ -8,6 +8,16 @@ CONSTANTS = {
     "RangeOfStateValues": 8
 }
 
+def TwoPointCrossover(options):
+    # Expected params
+    parent1AsList = list(options["parent1"])
+    parent2AsList = list(options["parent2"])
+    crossoverPoint1 = random.randint(1, CONSTANTS["RangeOfStateValues"] - 3) #1..6 = 1
+    crossoverPoint2 = random.randint(crossoverPoint1 + 1, CONSTANTS["RangeOfStateValues"] - 1) #(cp1+1)..7 = 2
+    child1 = parent1AsList[0:crossoverPoint1] + parent2AsList[crossoverPoint1:crossoverPoint2] + parent1AsList[crossoverPoint2:CONSTANTS["RangeOfStateValues"]]
+    child2 = parent2AsList[0:crossoverPoint1] + parent1AsList[crossoverPoint1:crossoverPoint2] + parent2AsList[crossoverPoint2:CONSTANTS["RangeOfStateValues"]]
+    return ["".join(child1),"".join(child2)]
+
 def SinglePointCrossover(options):
     # Expected params
     parent1AsList = list(options["parent1"])
@@ -35,6 +45,10 @@ def ReproduceWithParents(options):
         })
     elif crossoverOperator == 1:
         print("Implement twpoPoint crossover")
+        return TwoPointCrossover({
+            "parent1": parent1,
+            "parent2": parent2
+        })
     elif crossoverOperator == 2:
         print("Implement cut and splice crossover")
     elif crossoverOperator == 3:
@@ -164,42 +178,74 @@ def Mutate(options):
         newChildren.append(newChild)
     return newChildren
 
-def GetParentIndexByDistribution(options):
+# def GetParentIndexByDistribution(options):
+#     # Expected params
+#     popWithDistr = options["populationWithDistribution"]
+
+#     randomNum = random.randint(0,99999999) / 100000000
+#     # Could I keep adding up the children percentages until I go higher than the random number?
+#     currSum = 0
+#     # for child in popWithDistr:
+#     for i in range(len(popWithDistr)):
+#         currChild = popWithDistr[i]
+#         currSum += currChild["distribution"]
+#         if currSum > randomNum:
+#             return i
+def GetParentsWithDistribution(options):
     # Expected params
     popWithDistr = options["populationWithDistribution"]
+    chromosomesPerIteration = options["chromosomesPerIteration"]
 
-    randomNum = random.randint(0,99999999) / 100000000
-    # Could I keep adding up the children percentages until I go higher than the random number?
-    currSum = 0
-    # for child in popWithDistr:
-    for i in range(len(popWithDistr)):
-        currChild = popWithDistr[i]
-        currSum += currChild["distribution"]
-        if currSum > randomNum:
-            return i
+    parents = []
+
+    while len(parents) < chromosomesPerIteration:
+        randomNum = random.randint(0,99999999) / 100000000
+        currSum = 0
+        for i in range(len(popWithDistr)):
+            currChild = popWithDistr[i]
+            currSum += currChild["distribution"]
+            if currSum > randomNum:
+                if currChild["child"] not in parents:
+                    parents.append(currChild["child"])
+                break
+    return parents
+
+# def GetParentsByDistribution(options):
+#     # Expected params
+#     chromosomesPerIteration = options["chromosomesPerIteration"]
+#     population = options["population"].copy()
+
+#     populationWithDistribution = GetChildrenWithDistribution({
+#         "population": population
+#     })
+
+#     parents = []
+#     for i in range(chromosomesPerIteration):
+#         newParentIndex = GetParentIndexByDistribution({
+#             "populationWithDistribution": populationWithDistribution
+#         })
+#         parents.append(populationWithDistribution[newParentIndex])
+#         # Once I get a parent I need to make sure I dont select it again
+#         del population[newParentIndex]
+#         # Need to recalculate distribution everytime
+#         populationWithDistribution = GetChildrenWithDistribution({
+#             "population": population
+#         })
+#     return parents
 
 def GetParentsByDistribution(options):
     # Expected params
     chromosomesPerIteration = options["chromosomesPerIteration"]
-    # popWithDistr = options["populationWithDistribution"].copy()
     population = options["population"].copy()
 
     populationWithDistribution = GetChildrenWithDistribution({
         "population": population
     })
 
-    parents = []
-    for i in range(chromosomesPerIteration):
-        newParentIndex = GetParentIndexByDistribution({
-            "populationWithDistribution": populationWithDistribution
-        })
-        parents.append(populationWithDistribution[newParentIndex])
-        # Once I get a parent I need to make sure I dont select it again
-        del population[newParentIndex]
-        # Need to recalculate distribution everytime
-        populationWithDistribution = GetChildrenWithDistribution({
-            "population": population
-        })
+    parents = GetParentsWithDistribution({
+        "populationWithDistribution": populationWithDistribution,
+        "chromosomesPerIteration": chromosomesPerIteration
+    })
     return parents
 
 def GetChildrenWithDistribution(options):
@@ -219,7 +265,8 @@ def GetParents(options):
         "population": population,
         "chromosomesPerIteration": chromosomesPerIteration
     })
-    return [parent["child"] for parent in parents]
+    # return [parent["child"] for parent in parents]
+    return parents
 
 def GenerateChildren(options):
     # Expected params
@@ -415,5 +462,9 @@ def Main():
 # SinglePointCrossover({
 #     "parent1": "32543213",
 #     "parent2": "31234523"
+# })
+# TwoPointCrossover({
+#     "parent1": "45798432",
+#     "parent2": "98672546"
 # })
 Main()
