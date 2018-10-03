@@ -5,7 +5,8 @@ import random
 CONSTANTS = {
     "GoalFitness": 28,
     "LengthOfState": 8,
-    "RangeOfStateValues": 8
+    "RangeOfStateValues": 8,
+    "MaxParentPopSize": 2000
 }
 
 def CutAndSplice(options):
@@ -268,11 +269,11 @@ def GetParents(options):
     population = options["population"]
     chromosomesPerIteration = options["chromosomesPerIteration"]
 
+    selectedParentPopulation = heapq.nlargest(CONSTANTS["MaxParentPopSize"], population)
     parents = GetParentsByDistribution({
-        "population": population,
+        "population": selectedParentPopulation,
         "chromosomesPerIteration": chromosomesPerIteration
     })
-    # return [parent["child"] for parent in parents]
     return parents
 
 def GenerateChildren(options):
@@ -446,6 +447,8 @@ def GetInputs():
         raise Exception("Initial population size cannot be smaller than the number of chromosomes to generate per iteration")
     if mutationRate > 1:
         raise Exception("Mutation rate must be <1")
+    if int(chromPerIteration * 10) > CONSTANTS["MaxParentPopSize"]:
+        CONSTANTS["MaxParentPopSize"] = int(chromPerIteration * 10)
     return {
         "initialPopulationSize": initialPopSize,
         "chromosomesPerIteration": chromPerIteration,
