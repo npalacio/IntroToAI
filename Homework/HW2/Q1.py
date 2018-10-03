@@ -8,6 +8,22 @@ CONSTANTS = {
     "RangeOfStateValues": 8
 }
 
+def CutAndSplice(options):
+    # Expected params
+    parent1AsList = list(options["parent1"])
+    parent2AsList = list(options["parent2"])
+
+    # Pick two cut points
+    cutPoint1 = random.randint(1, CONSTANTS["LengthOfState"] - 1)
+    cutPoint2 = random.randint(1, CONSTANTS["LengthOfState"] - 1)
+
+    child1 = parent1AsList[0:cutPoint1] + parent2AsList[cutPoint2:CONSTANTS["LengthOfState"]]
+    child2 = parent2AsList[0:cutPoint2] + parent1AsList[cutPoint1:CONSTANTS["LengthOfState"]]
+
+    child1 = child1[0:8] + [str(random.randint(1,CONSTANTS["RangeOfStateValues"])) for x in range(CONSTANTS["LengthOfState"] - len(child1))]
+    child2 = child2[0:8] + [str(random.randint(1,CONSTANTS["RangeOfStateValues"])) for x in range(CONSTANTS["LengthOfState"] - len(child2))]
+    return ["".join(child1),"".join(child2)]
+
 def UniformCrossover(options):
     # Expected params
     parent1AsList = list(options["parent1"])
@@ -71,7 +87,10 @@ def ReproduceWithParents(options):
             "parent2": parent2
         })
     elif crossoverOperator == 2:
-        print("Implement cut and splice crossover")
+        return CutAndSplice({
+            "parent1": parent1,
+            "parent2": parent2
+        })
     elif crossoverOperator == 3:
         return UniformCrossover({
             "parent1": parent1,
