@@ -1,0 +1,27 @@
+Problem Statement
+-Predicting flight delays after takeoff
+-Why it is important
+    -The logistics of airlines and flights can be incredibly complex
+    -Airlines need to know if a flight is going to be arriving late because this could have a chain reaction on other flights
+    -Passengers or people waiting on passengers need to know if a flight is going to be late so they can plan accordingly
+        -The sooner they know the better
+-Why is it challenging/difficult
+    -Determining how late a flight is going to be can depend on a lot of things
+        -Which airline, did it takeoff late, where are they traveling to/from, WEATHER
+
+Existing Techniques
+-I am not sure about existing techniques for this Problem
+    -It is possible that they just use the departure time offset as the arrival time offset, ignoring other factors
+
+My Approach
+-My approach will be to employ several different algorithms and compare their results
+    -Decision trees, SVMs, boosted decision trees
+-Initially I will not factor in weather data, but I will bring it into the dataset and run the algorithms again
+-I will build several graphs in order to look at the data and try to identify features that may be useful to include
+-I will use several python libraries for my implementation
+    -matplotlib for charts/graphs
+    -scikitlearn for ML algorithms
+    -Jupyter notebooks for sharing
+-I will evaluate the algorithms based on their accuracy, recall and precision
+
+Bi-weekly Milestones
