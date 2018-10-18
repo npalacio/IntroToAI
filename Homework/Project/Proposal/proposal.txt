@@ -15,7 +15,7 @@ Existing Techniques
 
 My Approach
 -My approach will be to employ several different algorithms and compare their results
-    -Decision trees, SVMs, boosted decision trees
+    -Decision trees, SVMs, regression
 -Initially I will not factor in weather data, but I will bring it into the dataset and run the algorithms again
 -I will build several graphs in order to look at the data and try to identify features that may be useful to include
 -I will use several python libraries for my implementation
@@ -25,3 +25,16 @@ My Approach
 -I will evaluate the algorithms based on their accuracy, recall and precision
 
 Bi-weekly Milestones
+-Tuesday, November 6th
+    -Python code
+        -Loads datasets
+        -Cleans data
+        -analyzes a few interesting features
+-Tuesday, November 20th
+    -Python code
+        -Runs 3 algorithms on clean dataset without weather data
+        -Some visual element to compare the algorithms
+-Tuesday, December 4th
+    -Python code
+        -Runs 3 algorithms on clean dataset with weather data
+        -Some visual element to compare the algorithms
