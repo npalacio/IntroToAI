@@ -2,3 +2,4 @@ Slides/*
 .vscode/*
 **/.ipynb_checkpoints/*
 **/Work/*.csv
+*.pdf
