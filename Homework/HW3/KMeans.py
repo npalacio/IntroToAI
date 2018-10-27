@@ -25,6 +25,7 @@ class KMeans:
             if IsDone(clusters, newClusters):
                 done = True
             else:
+                # Test
                 clusters = newClusters
         return newClusters
 
