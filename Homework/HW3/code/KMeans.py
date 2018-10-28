@@ -1,11 +1,8 @@
 import pandas as pd
 import random
 import math
-tmpConfig = {
-    'dataPath': './hw3-crime_data.csv',
-    'columns': ['Murder','Assault','UrbanPop','Rape']
-}
-class KMeans:
+
+class KMeansAlgorithm:
     def __init__(self, k, dataPath, columns):
         self.k = k
         self.dataPath = dataPath
@@ -13,24 +10,42 @@ class KMeans:
 
     def Run(self):
         # Pick k random centers (not from dataset? centroids?)
-        data = LoadData(self.dataPath, self.columns)
-        centers = GetRandomCenters(self.k, data)
+        data = self.LoadData(self.dataPath, self.columns)
+        centers = self.GetRandomCenters(self.k, data)
 
         # For each point, assign it to the cluster with the closest center
-        clusters = GetClusters(data, centers)
+        clusters = self.GetClusters(data, centers)
         newClusters = []
         done = False
+        iterationCount = 0
         while not done:
             # For each cluster, calculate a new centroid (center of that cluster)
-            newCenters = GetUpdatedCenters(clusters)
+            newCenters = self.GetUpdatedCenters(data, clusters)
             # For each point, assign it again to the cluster with the closest center
-            newClusters = GetClusters(newCenters)
+            newClusters = self.GetClusters(data, newCenters)
             # Stop when no cluster memberships change
-            if IsDone(clusters, newClusters):
+            if self.IsDone(clusters, newClusters):
                 done = True
             else:
                 clusters = newClusters
-        return newClusters
+            iterationCount += 1
+        # Need to calculate final distortion
+        distortion = self.GetDistortion(data, newCenters, newClusters)
+        return {
+            'clusters': newClusters,
+            'distortion': distortion,
+            'iterations': iterationCount
+        }
+
+    def GetDistortion(self, data, centers, clusters):
+        distortion = 0
+        for clusterIndex in range(len(clusters)):
+            center = centers[clusterIndex]
+            cluster = clusters[clusterIndex]
+            for dataIndex in range(len(cluster)):
+                dataPoint = data[cluster[dataIndex]]
+                distortion += abs(self.GetDistance(dataPoint, center) ** 2)
+        return distortion
 
     def GetRandomCenters(self, k, data):
         randomDataIndices = random.sample(range(len(data)), k)
@@ -52,8 +67,10 @@ class KMeans:
             bestClusterIndex = 0
             for centerIndex in centerCountArr:
                 # See which center this data point belongs to
-                dist = GetDistance(centers[centerIndex],data[dataIndex])
-                bestClusterIndex = centerIndex if dist < minDist else bestClusterIndex
+                dist = self.GetDistance(centers[centerIndex],data[dataIndex])
+                if dist < minDist:
+                    bestClusterIndex = centerIndex
+                    minDist = dist
             # Assign data point to its closest cluster center
             clusters[bestClusterIndex].append(dataIndex)
         return clusters
@@ -63,15 +80,15 @@ class KMeans:
         euclidianDist = math.sqrt(sum([abs(point1[i] - point2[i]) ** 2 for i in range(featureCount)]))
         return euclidianDist
 
-    def GetUpdatedCenters(self, clusters):
+    def GetUpdatedCenters(self, data, clusters):
         # For each cluster, find its center
         newCenters = [[] for c in clusters]
         for clusterIndex in range(len(clusters)):
             currCluster = clusters[clusterIndex]
-            featureTotals = [0 for x in currCluster[0]]
+            featureTotals = [0 for x in range(len(data[currCluster[0]]))]
             rowCount = len(currCluster)
             for clusterDataIndex in range(rowCount):
-                dataPoint = currCluster[clusterDataIndex]
+                dataPoint = data[currCluster[clusterDataIndex]]
                 for featureIndex in range(len(dataPoint)):
                     # For each column, add it to the corresponding column total
                     featureTotals[featureIndex] = featureTotals[featureIndex] + dataPoint[featureIndex]
