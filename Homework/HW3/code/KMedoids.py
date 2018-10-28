@@ -1,6 +1,8 @@
-# Will need to implement K-Medoids algorithm
+import pandas as pd
+import math
+
 class KMedoidsAlgorithm:
-    def __init__(self, k):
+    def __init__(self, k, dataPath, columns, labelColumn):
         self.k = k
         self.dataPath = dataPath
         self.columns = columns
@@ -20,13 +22,19 @@ class KMedoidsAlgorithm:
             newCenters = self.GetNewCenters(data, clusters)
             newClusters = self.GetClusters(data, newCenters)
             newTotalDistance = self.GetTotalDistance(data, newCenters, newClusters)
+            # print('Cluster 1 = ' + str(len(newClusters[0])))
+            # print('Cluster 2 = ' + str(len(newClusters[1])))
+            # print('Cluster 3 = ' + str(len(newClusters[2])))
+            # print()
             if self.IsDone(totalDistance, newTotalDistance):
                 done = True
             else:
                 clusters = newClusters
+                totalDistance = newTotalDistance
         actualLabels = self.LoadData(self.dataPath, self.labelColumn)
         return {
             'clusters': newClusters,
+            'centers': newCenters,
             'actualLabels': actualLabels
         }
 
@@ -41,7 +49,7 @@ class KMedoidsAlgorithm:
         dataRange = range(len(data))
         distanceRatios = [0 for x in dataRange]
         D = self.GetD(data)
-        distanceRatios = self.GetDistanceRatios(data)
+        distanceRatios = self.GetDistanceRatios(data, D)
         sortedDistanceRatios = sorted(distanceRatios, key=lambda k: k['distanceRatio'])
         return [dataPoint['index'] for dataPoint in sortedDistanceRatios[:k]]
 
@@ -120,8 +128,4 @@ class KMedoidsAlgorithm:
         return clusterDistance
 
     def IsDone(self, previousDist, newDist):
-        if previousDist == newDist:
-            return True
-        elif previousDist < newDist:
-            print('new distance was larger than previous distance')
-        return False
+        return previousDist == newDist
