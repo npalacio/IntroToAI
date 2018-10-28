@@ -1,9 +1,10 @@
 # Will need to implement K-Medoids algorithm
-class KMedoids:
+class KMedoidsAlgorithm:
     def __init__(self, k):
         self.k = k
         self.dataPath = dataPath
         self.columns = columns
+        self.labelColumn = labelColumn
 
     def Run(self):
         print('empty run method')
@@ -23,6 +24,11 @@ class KMedoids:
                 done = True
             else:
                 clusters = newClusters
+        actualLabels = self.LoadData(self.dataPath, self.labelColumn)
+        return {
+            'clusters': newClusters,
+            'actualLabels': actualLabels
+        }
 
     def LoadData(self, csvPath, columns):
         # Should return [[],[],[],...] for data
@@ -114,3 +120,8 @@ class KMedoids:
         return clusterDistance
 
     def IsDone(self, previousDist, newDist):
+        if previousDist == newDist:
+            return True
+        elif previousDist < newDist:
+            print('new distance was larger than previous distance')
+        return False
