@@ -36,18 +36,24 @@ class KMedoids:
         distanceRatios = [0 for x in dataRange]
         D = self.GetD(data)
         distanceRatios = self.GetDistanceRatios(data)
-        distanceRatios.sort()
-        return distanceRatios[:k]
+        sortedDistanceRatios = sorted(distanceRatios, key=lambda k: k['distanceRatio'])
+        return [dataPoint['index'] for dataPoint in sortedDistanceRatios[:k]]
 
     def GetD(self, data):
+        D = 0
+        for currDataIndex in range(len(data) - 1):
+            for nextDataIndex in range(currDataIndex + 1, len(data)):
+                D += self.GetEuclidianDistance(data[currDataIndex], data[nextDataIndex])
+        return D
+
         
     def GetDistanceRatios(self, data, D):
         dataRange = range(len(data))
-        distanceRatios = [0 for x in dataRange]
+        distanceRatios = [{'index': 0, 'distanceRatio': 0} for x in dataRange]
         for dataPointIndex in dataRange:
             dataPoint = data[dataPointIndex]
             distanceRatio = sum([self.GetEuclidianDistance(dataPoint, otherDataPoint) / D for otherDataPoint in data])
-            distanceRatios[dataPointIndex] = distanceRatio
+            distanceRatios[dataPointIndex] = {'index': dataPointIndex, 'distanceRatio': distanceRatio}
         return distanceRatios
 
     def GetEuclidianDistance(self, point1, point2):
@@ -56,6 +62,55 @@ class KMedoids:
         return euclidianDist
 
     def GetClusters(self, data, centers):
+        # get k lists of data keys
+        centerCountArr = range(len(centers))
+        clusters = [[] for center in centerCountArr]
+        for dataIndex in range(len(data)):
+            minDist = float("inf")
+            bestClusterIndex = 0
+            for centerIndex in centerCountArr:
+                # See which center this data point belongs to
+                dist = self.GetEuclidianDistance(data[centers[centerIndex]],data[dataIndex])
+                if dist < minDist:
+                    bestClusterIndex = centerIndex
+                    minDist = dist
+            # Assign data point to its closest cluster center
+            clusters[bestClusterIndex].append(dataIndex)
+        return clusters
+
     def GetTotalDistance(self, data, centers, clusters):
-    def GetNewCenters(self, data, centers, clusters):
+        # This is sum of all cluster objects to their cluster centers
+        totalDistance = 0
+        for clusterIndex in range(len(clusters)):
+            cluster = clusters[clusterIndex]
+            clusterCenter = data[centers[clusterIndex]]
+            for clusterMemberDataIndex in cluster:
+                clusterMember = data[clusterMemberDataIndex]
+                totalDistance += self.GetEuclidianDistance(clusterCenter, clusterMember)
+        return totalDistance
+
+    def GetNewCenters(self, data, clusters):
+        # For each cluster, pick a new data member to be the center
+        newCenters = [0 for x in range(len(clusters))]
+        for clusterIndex in range(len(clusters)):
+            clusterMemberDataIndices = clusters[clusterIndex]
+            minDist = float('inf')
+            bestCenterIndex = 0
+            for memberDataIndex in clusterMemberDataIndices:
+                # See what the total distance would be if this were the cluster center
+                dist = self.GetClusterDistance(data, memberDataIndex, clusterMemberDataIndices)
+                if dist < minDist:
+                    # We have a new best cluster center
+                    bestCenterIndex = memberDataIndex
+            newCenters[clusterIndex] = bestCenterIndex
+        return newCenters
+
+    def GetClusterDistance(self, data, centerDataIndex, clusterMemberDataIndices):
+        clusterDistance = 0
+        center = data[centerDataIndex]
+        for memberDataIndex in clusterMemberDataIndices:
+            member = data[memberDataIndex]
+            clusterDistance += self.GetEuclidianDistance(center, member)
+        return clusterDistance
+
     def IsDone(self, previousDist, newDist):
