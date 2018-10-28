@@ -3,3 +3,4 @@ Slides/*
 **/.ipynb_checkpoints/*
 **/Work/*.csv
 *.pdf
+**/__pycache__
