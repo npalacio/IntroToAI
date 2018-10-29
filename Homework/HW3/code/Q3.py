@@ -31,21 +31,54 @@ def GetActualLabels(clusterDataIndices, dataLabelDict, clusterLabel):
                 })
     return rowsWithLabels
 
-def GetConfusionMatrix(labels, clusters, centers):
-    dataLabelDict = GetLabelDictionary(labels)
-    # Get list of all rows we predicted as this label
+def GetRowsWithLabels(labels, clusters, centers, dataLabelDict):
+    rowsWithLabels = []
     for clusterIndex in range(len(clusters)):
         centerDataIndex = centers[clusterIndex]
         # All of the points in this cluster get this label
         clusterLabel = labels[centerDataIndex][0]
         clusterDataIndices = clusters[clusterIndex]
-        rowsWithLabels = GetActualLabels(clusterDataIndices, dataLabelDict, clusterLabel)
+        rowsWithLabels += GetActualLabels(clusterDataIndices, dataLabelDict, clusterLabel)
+    return rowsWithLabels
+
+def GetConfusionMatrix(labels, clusters, centers):
+    dataLabelDict = GetLabelDictionary(labels)
+    rowsWithLabels = GetRowsWithLabels(labels, clusters, centers, dataLabelDict)
+    # [
+    #   [labeledAs1Is1, labeledAs1Is2, labeledAs1Is3]
+    #   [labeledAs2Is1, labeledAs2Is2, labeledAs2Is3]
+    #   [labeledAs3Is1, labeledAs3Is2, labeledAs3Is3]
+    # ]
+    confusionMatrixWithPredictedAsKey = {}
+    for predictedLabel in dataLabelDict:
+        row = []
+        for actualLabel in dataLabelDict:
+            count = len([row for row in rowsWithLabels if row['predictedLabel'] == predictedLabel and row['actualLabel'] == actualLabel ])
+            row.append(count)
+        confusionMatrixWithPredictedAsKey[predictedLabel] = row
+    return confusionMatrixWithPredictedAsKey
+
+def PrintConfusionMatrix(confusionMatrix):
+    columnWidth = 20
+    topRow = ' ' * columnWidth
+    rows = []
+    for label in sorted(confusionMatrix):
+        topRow += label.ljust(columnWidth)
+        row = label.ljust(columnWidth) 
+        for count in confusionMatrix[label]:
+            row += str(count).ljust(columnWidth)
+        rows.append(row)
+    print(' ' * columnWidth * (1 + len(confusionMatrix) // 2) + 'Actual Labels')
+    print(topRow)
+    for stringRow in rows:
+        print(stringRow)
 
 def PrintResults(k, results):
     clusters = results['clusters']
     centers = results['centers']
     labels = results['actualLabels']
     confusionMatrix = GetConfusionMatrix(labels, clusters, centers)
+    PrintConfusionMatrix(confusionMatrix)
 
 def Main(kVals, dataPath, columns, labelColumn):
     for k in kVals:
