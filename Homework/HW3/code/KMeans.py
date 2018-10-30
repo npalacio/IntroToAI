@@ -3,10 +3,11 @@ import random
 import math
 
 class KMeansAlgorithm:
-    def __init__(self, k, dataPath, columns):
+    def __init__(self, k, dataPath, columns, labelColumn = []):
         self.k = k
         self.dataPath = dataPath
         self.columns = columns
+        self.labelColumn = labelColumn
 
     def Run(self):
         # Pick k random centers (not from dataset? centroids?)
@@ -31,10 +32,13 @@ class KMeansAlgorithm:
             iterationCount += 1
         # Need to calculate final distortion
         distortion = self.GetDistortion(data, newCenters, newClusters)
+        actualLabels = self.LoadData(self.dataPath, self.labelColumn)
         return {
             'clusters': newClusters,
+            'centers': newCenters,
             'distortion': distortion,
-            'iterations': iterationCount
+            'iterations': iterationCount,
+            'actualLabels': actualLabels
         }
 
     def GetDistortion(self, data, centers, clusters):

@@ -1,10 +1,11 @@
 from KMedoids import KMedoidsAlgorithm
+from KMeans import KMeansAlgorithm
 
 Config = {
     'dataPath': './irisData.csv',
     'columns': ['SepalLength','SepalWidth','PetalLength','PetalWidth'],
     'labelColumn': ['Label'],
-    'kValues': [3]
+    'k': 3
 }
 
 def GetLabelDictionary(labels):
@@ -80,10 +81,14 @@ def PrintResults(k, results):
     confusionMatrix = GetConfusionMatrix(labels, clusters, centers)
     PrintConfusionMatrix(confusionMatrix)
 
-def Main(kVals, dataPath, columns, labelColumn):
-    for k in kVals:
-        kMedoid = KMedoidsAlgorithm(k, dataPath, columns, labelColumn)
-        results = kMedoid.Run()
-        PrintResults(k, results)
+def Main(k, dataPath, columns, labelColumn):
+    print('Running with KMedoids...')
+    kMedoid = KMedoidsAlgorithm(k, dataPath, columns, labelColumn)
+    results = kMedoid.Run()
+    PrintResults(k, results)
+    print('Running with KMeans...')
+    kMeans = KMeansAlgorithm(k, dataPath, columns, labelColumn)
+    results = kMeans.Run()
+    PrintResults(k, results)
 
-Main(Config['kValues'], Config['dataPath'], Config['columns'], Config['labelColumn'])
+Main(Config['k'], Config['dataPath'], Config['columns'], Config['labelColumn'])
