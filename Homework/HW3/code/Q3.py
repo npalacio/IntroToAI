@@ -53,9 +53,9 @@ def GetConfusionMatrix(labels, clusters, centers):
     #   [labeledAs3Is1, labeledAs3Is2, labeledAs3Is3]
     # ]
     confusionMatrixWithPredictedAsKey = {}
-    for predictedLabel in dataLabelDict:
+    for predictedLabel in sorted(dataLabelDict):
         row = []
-        for actualLabel in dataLabelDict:
+        for actualLabel in sorted(dataLabelDict):
             count = len([row for row in rowsWithLabels if row['predictedLabel'] == predictedLabel and row['actualLabel'] == actualLabel ])
             row.append(count)
         confusionMatrixWithPredictedAsKey[predictedLabel] = row
@@ -84,13 +84,15 @@ def PrintResults(k, results):
     PrintConfusionMatrix(confusionMatrix)
 
 def Main(k, dataPath, columns, labelColumn):
-    print('Running with KMedoids...')
-    kMedoid = KMedoidsAlgorithm(k, dataPath, columns, labelColumn)
-    results = kMedoid.Run()
-    PrintResults(k, results)
+    print()
     print('Running with KMeans...')
     kMeans = KMeansAlgorithm(k, dataPath, columns, labelColumn)
     results = kMeans.Run()
+    PrintResults(k, results)
+    print()
+    print('Running with KMedoids...')
+    kMedoid = KMedoidsAlgorithm(k, dataPath, columns, labelColumn)
+    results = kMedoid.Run()
     PrintResults(k, results)
 
 Main(Config['k'], Config['dataPath'], Config['columns'], Config['labelColumn'])

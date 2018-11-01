@@ -125,6 +125,7 @@ class KMedoidsAlgorithm:
                 if dist < minDist:
                     # We have a new best cluster center
                     bestCenterIndex = memberDataIndex
+                    minDist = dist
             newCenters[clusterIndex] = bestCenterIndex
         return newCenters
 
