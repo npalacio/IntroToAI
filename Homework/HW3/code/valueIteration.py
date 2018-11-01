@@ -11,6 +11,7 @@ class ValueIterationAlgorithm:
             # {'U': [{'probability': .8, 'action': 'U'},{'probability': .1, 'action': 'L'}]}
         self.discountFactor = discountFactor
         self.gridInfo = gridInfo
+        self.epsilon = float('1E-3')
 
     def Run(self):
         done = False
@@ -18,26 +19,39 @@ class ValueIterationAlgorithm:
         utilChangeLimit = self.GetUtilChangeLimit(self.discountFactor)
         while not done:
             maxUtilityChange = 0
-            # newExpectedRewardDict = expectedRewardDict.copy()
             newExpectedRewardDict = {}
             for state in self.rewardDict:
                 newExpectedRewardDict[state] = self.GetExpectedReward(state, expectedRewardDict, self.rewardDict[state], self.transitionDict, self.discountFactor)
                 if abs(newExpectedRewardDict[state] - expectedRewardDict[state]) > maxUtilityChange:
                     maxUtilityChange = abs(newExpectedRewardDict[state] - expectedRewardDict[state])
             expectedRewardDict = newExpectedRewardDict.copy()
-            print('Max change = ' + str(maxUtilityChange))
             if maxUtilityChange < utilChangeLimit: 
                 done = True
-        policy = self.GetPolicy(expectedRewardDict)
+        policy = self.GetPolicy(expectedRewardDict, self.rewardDict, self.transitionDict)
         return {
-            "expectedRewardDict": expectedRewardDict
+            'expectedRewardDict': expectedRewardDict,
+            'policy': policy
         }
 
-    def GetPolicy(self, expectedRewardDict):
-        return None
+    def GetPolicy(self, expectedRewardDict, rewardDict, transitionDict):
+        policy = {}
+        for state in expectedRewardDict:
+            if state in self.gridInfo['rewardCells']['cells']:
+                policy[state] = 'NA'
+                continue
+            xArray = []
+            actions = []
+            for action in transitionDict:
+                actions.append(action)
+                xArray.append(self.GetX(state, expectedRewardDict, transitionDict[action]))
+            maxX = max(xArray)
+            policy[state] = actions[xArray.index(maxX)]
+        return policy
 
     def GetUtilChangeLimit(self, discountFactor):
-        return float('2.22E-17')
+        # TODO: Figure out terminal state
+        # return float('2.22E-17')
+        return self.epsilon * (1 - discountFactor) / discountFactor
 
     def GetInitialExpectedRewardDict(self, rewardDict):
         expectedRewardDict = {}
@@ -47,9 +61,11 @@ class ValueIterationAlgorithm:
         return expectedRewardDict
 
     def GetExpectedReward(self, state, expectedRewardDict, reward, transitionDict, discountFactor):
-       xArray = [self.GetX(state, expectedRewardDict, transitionDict[action]) for action in transitionDict]
-       maxX = max(xArray)
-       return reward + discountFactor * maxX
+        if state in self.gridInfo['rewardCells']['cells']:
+            return reward
+        xArray = [self.GetX(state, expectedRewardDict, transitionDict[action]) for action in transitionDict]
+        maxX = max(xArray)
+        return reward + discountFactor * maxX
     
     def GetX(self, state, expectedRewardDict, transitions):
         # x = sum([ for transition in transitions])
@@ -58,7 +74,6 @@ class ValueIterationAlgorithm:
             nextState = self.GetNextState(state, transition['action'])
             x.append(transition['probability'] * expectedRewardDict[nextState])
         return sum(x)
-
 
     def GetNextState(self, state, action):
         newState = state
