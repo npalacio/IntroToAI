@@ -93,7 +93,7 @@ def GetRewardDict(r, gridInfo):
     return rewardDict
 
 def GetAlgorithm():
-    algorithm = int(input('Enter 1 for Value Iteration, 2 for Policy Iteration, anything else to Exit: '))
+    algorithm = int(input('Enter 1 for Value Iteration, 2 for Policy Iteration, anything other number to Exit: '))
     return algorithm
 
 def GetR():
@@ -103,16 +103,17 @@ def GetR():
 def PrintPolicy(policy):
     print('Policy table calculated:')
     for state in sorted(policy):
-        print(str(state) + ': ' + str(policy['state']))
+        print(str(state) + ': ' + str(policy[state]))
 
 def PrintUtilities(utils):
     print('Utilities:')
     for state in sorted(utils):
-        print(str(state) + ': ' + str(round(utils['state'], 2)))
+        print(str(state) + ': ' + str(round(utils[state], 2)))
 
 def PrintResults(results):
     PrintPolicy(results['policy'])
     PrintUtilities(results['expectedRewardDict'])
+    print()
 
 def Main(gridInfo, discountFactor):
     done = False
