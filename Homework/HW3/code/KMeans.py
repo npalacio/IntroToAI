@@ -33,13 +33,29 @@ class KMeansAlgorithm:
         # Need to calculate final distortion
         distortion = self.GetDistortion(data, newCenters, newClusters)
         actualLabels = self.LoadData(self.dataPath, self.labelColumn, False)
+        centerDataIndices = self.GetCenterDataIndices(data, newCenters)
         return {
             'clusters': newClusters,
-            'centers': newCenters,
+            'centers': centerDataIndices,
             'distortion': distortion,
             'iterations': iterationCount,
             'actualLabels': actualLabels
         }
+
+    def GetCenterDataIndices(self, data, centers):
+        # Need to associate each center point with the closest data member
+        centerDataIndices = []
+        for center in centers:
+            minDist = float('inf')
+            closestDataIndex = 0
+            for dataIndex in range(len(data)):
+                dataMember = data[dataIndex]
+                dist = self.GetDistance(center, dataMember)
+                if dist < minDist:
+                    minDist = dist
+                    closestDataIndex = dataIndex
+            centerDataIndices.append(closestDataIndex) 
+        return centerDataIndices
 
     def GetDistortion(self, data, centers, clusters):
         distortion = 0
