@@ -1,4 +1,4 @@
-import pandas as pd
+import csv
 import math
 
 class KMedoidsAlgorithm:
@@ -9,8 +9,7 @@ class KMedoidsAlgorithm:
         self.labelColumn = labelColumn
 
     def Run(self):
-        print('empty run method')
-        data = self.LoadData(self.dataPath, self.columns)
+        data = self.LoadData(self.dataPath, self.columns, True)
         # Pick k random data members as starting centers
         centers = self.GetInitialCenters(self.k, data)
         # For each point, assign it to the cluster with the closest center
@@ -31,18 +30,28 @@ class KMedoidsAlgorithm:
             else:
                 clusters = newClusters
                 totalDistance = newTotalDistance
-        actualLabels = self.LoadData(self.dataPath, self.labelColumn)
+        actualLabels = self.LoadData(self.dataPath, self.labelColumn, False)
         return {
             'clusters': newClusters,
             'centers': newCenters,
             'actualLabels': actualLabels
         }
 
-    def LoadData(self, csvPath, columns):
+    def LoadData(self, csvPath, columnIndices, isNumeric):
         # Should return [[],[],[],...] for data
-        df = pd.read_csv(csvPath)
-        df = df.filter(items=columns)
-        return df.values.tolist()
+        with open(csvPath, 'r') as f:
+            reader = csv.reader(f)
+            your_list = list(reader)[1:]
+        filteredList = []
+        for row in your_list:
+            newRow = []
+            for index in columnIndices:
+                if isNumeric:
+                    newRow.append(float(row[index]))
+                else:
+                    newRow.append(row[index])
+            filteredList.append(newRow)
+        return filteredList
 
     def GetInitialCenters(self, k, data):
         # Find the k data points with the smallest total distance ratios to the other data points

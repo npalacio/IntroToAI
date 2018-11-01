@@ -3,8 +3,10 @@ from KMeans import KMeansAlgorithm
 
 Config = {
     'dataPath': './irisData.csv',
-    'columns': ['SepalLength','SepalWidth','PetalLength','PetalWidth'],
-    'labelColumn': ['Label'],
+    # 'columns': ['SepalLength','SepalWidth','PetalLength','PetalWidth'],
+    # 'labelColumn': ['Label'],
+    'columns': [0,1,2,3],
+    'labelColumn': [4],
     'k': 3
 }
 

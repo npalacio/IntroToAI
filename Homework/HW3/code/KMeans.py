@@ -1,4 +1,4 @@
-import pandas as pd
+import csv
 import random
 import math
 
@@ -11,7 +11,7 @@ class KMeansAlgorithm:
 
     def Run(self):
         # Pick k random centers (not from dataset? centroids?)
-        data = self.LoadData(self.dataPath, self.columns)
+        data = self.LoadData(self.dataPath, self.columns, True)
         centers = self.GetRandomCenters(self.k, data)
 
         # For each point, assign it to the cluster with the closest center
@@ -32,7 +32,7 @@ class KMeansAlgorithm:
             iterationCount += 1
         # Need to calculate final distortion
         distortion = self.GetDistortion(data, newCenters, newClusters)
-        actualLabels = self.LoadData(self.dataPath, self.labelColumn)
+        actualLabels = self.LoadData(self.dataPath, self.labelColumn, False)
         return {
             'clusters': newClusters,
             'centers': newCenters,
@@ -56,11 +56,21 @@ class KMeansAlgorithm:
         randomCenters = [data[i] for i in randomDataIndices]
         return randomCenters
         
-    def LoadData(self, csvPath, columns):
+    def LoadData(self, csvPath, columnIndices, isNumeric):
         # Should return [[],[],[],...] for data
-        df = pd.read_csv(csvPath)
-        df = df.filter(items=columns)
-        return df.values.tolist()
+        with open(csvPath, 'r') as f:
+            reader = csv.reader(f)
+            your_list = list(reader)[1:]
+        filteredList = []
+        for row in your_list:
+            newRow = []
+            for index in columnIndices:
+                if isNumeric:
+                    newRow.append(float(row[index]))
+                else:
+                    newRow.append(row[index])
+            filteredList.append(newRow)
+        return filteredList
 
     def GetClusters(self, data, centers):
         # get k lists of data keys

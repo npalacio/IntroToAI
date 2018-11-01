@@ -2,7 +2,8 @@ from KMeans import KMeansAlgorithm
 
 Config = {
     'dataPath': './hw3-crime_data.csv',
-    'columns': ['Murder','Assault','UrbanPop','Rape'],
+    # 'columns': ['Murder','Assault','UrbanPop','Rape'],
+    'columns': [2,3,4,5],
     'kValues': [2,3,4,5,6]
 }
 
