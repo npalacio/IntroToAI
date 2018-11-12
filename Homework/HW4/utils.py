@@ -1,20 +1,23 @@
-def EvaluatePolicy(rewardDict, utilitiesDict, transitionDict, discountFactor, policies, gridInfo):
+def EvaluatePolicy(rewardDict, utilitiesDict, transitionModel, discountFactor, policies, gridInfo):
     udpatedUtilities = {}
     for state in utilitiesDict:
         if state in gridInfo['rewardCells']['cells']:
             udpatedUtilities[state] = rewardDict[state]
             continue
-        x = GetBellmanPart2(state, rewardDict, utilitiesDict, transitionDict[policies[state]])
+        # x = GetBellmanPart2(state, rewardDict, utilitiesDict, transitionDict[policies[state]])
+        action = policies[state]
+        x = GetBellmanPart2(state, rewardDict, utilitiesDict, [(transition[2], transitionModel[transition]) for transition in transitionModel if transition[0] == state and transition[1] == action])
         udpatedUtilities[state] = rewardDict[state] + discountFactor * x
     return udpatedUtilities
 
-def GetBellmanPart2(state, rewardDict, expectedRewardDict, transitions, gridInfo):
+def GetBellmanPart2(state, rewardDict, utilitiesDict, transitions, gridInfo):
     if state in gridInfo['rewardCells']['cells']:
         return rewardDict[state]
     x = []
     for transition in transitions:
-        nextState = GetNextState(state, transition['action'])
-        x.append(transition['probability'] * expectedRewardDict[nextState])
+        # transition = (resultingState, probability)
+        nextState = transition[0]
+        x.append(transition[1] * utilitiesDict[nextState])
     return sum(x)
 
 def GetNextState(state, action, gridInfo):
