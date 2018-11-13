@@ -13,12 +13,14 @@ class AdaptiveDynamicProgramming:
         # Static variables
         self.gridCells = self.GetGridCells(self.gridInfo)
         self.gridCellsMinusObstacles = self.GetGridCellsMinusObstacles(self.gridCells, self.gridInfo)
+        self.validGridCells = self.GetValidGridCells(self.gridCells, self.gridInfo)
         self.prevState = None
         self.prevAction = None
         self.stateActionCount = self.InitializeStateActionCount(self.gridInfo, self.actualTransitionModel)
         self.stateActionStateCount = self.InitializeStateActionStateCount()
         self.transitionModel = self.InitializeTransitionModel()
-        self.rewardDict = self.InitializeRewardDict(self.gridCellsMinusObstacles)
+        # Every cell should have some reward
+        self.rewardDict = self.InitializeRewardDict(self.gridCells)
         self.utilityDict = self.InitializeUtilityDict()
 
     def Run(self):
@@ -29,6 +31,8 @@ class AdaptiveDynamicProgramming:
             self.RunEpoch()
             iterationCount += 1
         # Once we finish learning we need to calculate policies from the utilties
+        policy = self.GetPolicy(self.utilityDict, self.actualTransitionModel, self.transitionModel, self.validCells)
+        return policy
 
     def RunEpoch(self):
         # 1 epoch = iterate until we hit a terminal state
@@ -43,7 +47,7 @@ class AdaptiveDynamicProgramming:
                 # This is not a starting state, we came here from somewhere
                 self.UpdateTransitionModelData(self.prevState, self.prevAction, state)
                 self.UpdateTransitionModel(self.stateActionCount)
-            newUtilities = self.EvaluatePolicy()
+            self.utilityDict = self.EvaluatePolicy(self.rewardDict, self.utilityDict, self.transitionModel, self.discountFactor, self.policy, self.validGridCells)
             isTerminalState = self.IsTerminalState()
             self.UpdatePreviousValues(isTerminalState, state, policy[state])
             epochDone = isTerminalState
@@ -52,16 +56,16 @@ class AdaptiveDynamicProgramming:
         # Simulate with actual transition model here?
         if state == None or action == None:
             return self.GetRandomStartingState(gridInfo)
-        newState = self.SimulateTransition(state, transitionDict[action], gridInfo)
+        newState = self.SimulateTransition(state, transitionDict[action], gridInfo, self.gridCellsMinusObstacles)
         return newState
         
-    def SimulateTransition(self, state, transitions, gridInfo):
+    def SimulateTransition(self, state, transitions, gridInfo, validCells):
         randomProbability = random.randint(0,1000) / 1000
         currTransitionValue = 0
         for transition in transitions:
             currTransitionValue += transition['probability']
             if currTransitionValue > randomProbability:
-                return utils.GetNextState(state, transition['action'], gridInfo)
+                return utils.GetNextState(state, transition['action'], gridInfo, validCells)
 
     def GetRandomStartingState(self, gridInfo):
         # terminalCells = [terminalCell['cell'] for terminalCell in gridInfo['terminalCells']]
@@ -111,6 +115,10 @@ class AdaptiveDynamicProgramming:
     def GetGridCellsMinusObstacles(self, gridCells, gridInfo):
         return [cell for cell in gridCells if cell not in gridInfo['obstacles']]
 
+    def GetValidGridCells(self, gridCells, gridInfo):
+        terminalCells = [cellObj['cell'] for cellObj in gridInfo['terminalCells']]
+        return [cell for cell in gridCells if cell not in gridInfo['obstacles'] and cell not in terminalCells]
+
     def GetGridCells(self, gridInfo):
         cells = []
         for col in gridInfo['width']:
@@ -138,9 +146,8 @@ class AdaptiveDynamicProgramming:
     def UpdateTransition(self, stateActionState, stateActionStateCount, stateActionCount):
         self.transitionModel[(triple[0], triple[1], triple[2])] = stateActionStateCount / stateActionCount
 
-    def EvaluatePolicy(self):
-        # TODO: refactor to drop self refs
-        updatedUtilities = utils.EvaluatePolicy(self.rewardDict, self.utilitiesDict, self.transitionModel, self.discountFactor, self.policy, self.gridInfo)
+    def EvaluatePolicy(self, rewardDict, utilitiesDict, transitionModel, discountFactor, policy, validCells):
+        updatedUtilities = utils.EvaluatePolicy(rewardDict, utilitiesDict, transitionModel, discountFactor, policy, validCells)
         return updatedUtilities
 
     def UpdatePreviousValues(self, isTerminalState, state):
@@ -150,3 +157,5 @@ class AdaptiveDynamicProgramming:
         else:
             self.prevState = state
             self.prevAction = self.policy[state]
+    def GetPolicy(utilitiesDict, transitionDict, transitionModel, validCells):
+        return utils.GetPolicy(utilitiesDict, transitionDict, transitionModel, validCells)
