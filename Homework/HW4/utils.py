@@ -5,7 +5,7 @@ def EvaluatePolicy(rewardDict, utilitiesDict, transitionModel, discountFactor, p
             udpatedUtilities[state] = rewardDict[state]
             continue
         action = policies[state]
-        transitions = self.GetTransitionsFromModel(transitionModel, state, action)
+        transitions = GetTransitionsFromModel(transitionModel, state, action)
         x = GetBellmanPart2(state, rewardDict, utilitiesDict, transitions)
         udpatedUtilities[state] = rewardDict[state] + discountFactor * x
     return udpatedUtilities

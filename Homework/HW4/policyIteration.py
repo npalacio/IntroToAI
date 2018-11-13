@@ -9,7 +9,7 @@ class PolicyIterationAlgorithm:
             # {'U': [{'probability': .8, 'action': 'U'},{'probability': .1, 'action': 'L'}]}
         self.discountFactor = discountFactor
         self.gridInfo = gridInfo
-        self.terminalCells = [terminalCell['cell'] for terminalCell in self.gridInfo['terminalCells']]
+        self.terminalCells = [terminalCell['cell'] for terminalCell in self.gridInfo['terminalCells']] + self.gridInfo['obstacles']
 
     def Run(self):
         expectedRewardDict = self.GetInitialExpectedRewardDict(self.rewardDict)
@@ -73,6 +73,8 @@ class PolicyIterationAlgorithm:
         elif action == 'R':
             if state[0] < self.gridInfo['width']:
                 newState = (state[0] + 1, state[1])
+        if newState in self.gridInfo['obstacles']:
+            return state
         return newState
 
     def GetInitialPolicies(self, rewardDict, transitionDict):

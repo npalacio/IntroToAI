@@ -1,7 +1,7 @@
 import utils
 import random
 
-class AdaptiveDynamicProgramming:
+class AdaptiveDynamicProgrammingAlgorithm:
     def __init__(self, policy, epochLimit, discountFactor, gridInfo, actualRewardDict, actualTransitionModel):
         self.policy = policy
         self.epochLimit = epochLimit
@@ -16,12 +16,12 @@ class AdaptiveDynamicProgramming:
         self.validGridCells = self.GetValidGridCells(self.gridCells, self.gridInfo)
         self.prevState = None
         self.prevAction = None
-        self.stateActionCount = self.InitializeStateActionCount(self.gridInfo, self.actualTransitionModel)
+        self.stateActionCount = self.InitializeStateActionCount()
         self.stateActionStateCount = self.InitializeStateActionStateCount()
         self.transitionModel = self.InitializeTransitionModel()
         # Every cell should have some reward
         self.rewardDict = self.InitializeRewardDict(self.gridCells)
-        self.utilityDict = self.InitializeUtilityDict()
+        self.utilityDict = self.InitializeUtilityDict(self.gridCells)
 
     def Run(self):
         epochLimit = self.epochLimit
@@ -48,8 +48,8 @@ class AdaptiveDynamicProgramming:
                 self.UpdateTransitionModelData(self.prevState, self.prevAction, state)
                 self.UpdateTransitionModel(self.stateActionCount)
             self.utilityDict = self.EvaluatePolicy(self.rewardDict, self.utilityDict, self.transitionModel, self.discountFactor, self.policy, self.validGridCells)
-            isTerminalState = self.IsTerminalState()
-            self.UpdatePreviousValues(isTerminalState, state, policy[state])
+            isTerminalState = self.IsTerminalState(state)
+            self.UpdatePreviousValues(isTerminalState, state, self.policy[state])
             epochDone = isTerminalState
 
     def GetNewState(self, state, action, gridInfo, transitionDict):
@@ -78,7 +78,7 @@ class AdaptiveDynamicProgramming:
 
     def IsValidState(self, state, gridInfo):
         terminalCells = [terminalCell['cell'] for terminalCell in gridInfo['terminalCells']]
-        return state not in terminalCells and state not in gridInfo['obstacles']:
+        return state not in terminalCells and state not in gridInfo['obstacles']
 
     def IsNewState(self, state, rewardDict):
         # If it is not in our reward dictionary, we have not visited it yet
@@ -88,20 +88,25 @@ class AdaptiveDynamicProgramming:
         # If it is not in our reward dictionary, we have not visited it yet
         return len([terminalCell for terminalCell in self.gridInfo['terminalCells'] if terminalCell['cell'] == state]) > 0
 
-    def InitializeStateActionCount(self, gridInfo, transitionDict):
-        pairs = {}
-        for state in self.gridCells:
-            if not self.IsValidState(state, gridInfo):
-                continue
-            for action in transitionDict:
-                pairs[(state, action)] = 0
-        return pairs
+    def InitializeStateActionCount(self):
+    # def InitializeStateActionCount(self, gridInfo, transitionDict):
+        # pairs = {}
+        # for state in self.gridCells:
+        #     if not self.IsValidState(state, gridInfo):
+        #         continue
+        #     for action in transitionDict:
+        #         pairs[(state, action)] = 0
+        # return pairs
+        return {}
 
     def InitializeStateActionStateCount(self):
+        return {}
         # This will need to initialize state-action-resultingState triples for all neighboring states of a state
         # TODO: Figure out how to intialize the triples without 800 dict keys
 
     def InitializeTransitionModel(self):
+        return {}
+        # {(state, action, state): .78}
         # TODO: How do I initialize the transition model? Set the actual move to a probability of 100%?
 
     def InitializeRewardDict(self, rewardableCells):
@@ -110,7 +115,11 @@ class AdaptiveDynamicProgramming:
             rewardDict[state] = 0
         return rewardDict
 
-    def InitializeUtilityDict(self):
+    def InitializeUtilityDict(self, gridCells):
+        utilDict = {}
+        for state in gridCells:
+            utilDict[state] = 0
+        return utilDict
 
     def GetGridCellsMinusObstacles(self, gridCells, gridInfo):
         return [cell for cell in gridCells if cell not in gridInfo['obstacles']]
@@ -121,8 +130,8 @@ class AdaptiveDynamicProgramming:
 
     def GetGridCells(self, gridInfo):
         cells = []
-        for col in gridInfo['width']:
-            for row in gridInfo['height']:
+        for col in range(gridInfo['width']):
+            for row in range(gridInfo['height']):
                 cells.append((col + 1, row + 1))
         return cells
 
@@ -134,22 +143,30 @@ class AdaptiveDynamicProgramming:
 
     def UpdateTransitionModelData(self, prevState, action, resultingState):
         # This keeps track of state-action-state frequencies
-        self.stateActionCount[(prevState, action)] += 1
-        self.stateActionStateCount[(prevState, action, resultingState)] += 1
+        if (prevState, action) in self.stateActionCount:
+            self.stateActionCount[(prevState, action)] += 1
+        else:
+            self.stateActionCount[(prevState, action)] = 1
+        if (prevState, action, resultingState) in self.stateActionStateCount:
+            self.stateActionStateCount[(prevState, action, resultingState)] += 1
+        else:
+            self.stateActionStateCount[(prevState, action, resultingState)] = 1
 
     def UpdateTransitionModel(self, stateActionStateCount, stateActionCount):
         # This is our actual transition model for MDP
         for triple in stateActionStateCount:
-            if stateActionStateCount[triple[0],triple[1],triple[2]] != 0:
-                self.UpdateTransition(triple, stateActionStateCount[triple[0],triple[1],triple[2]] stateActionCount[(triple[0], triple[1])])
+            if stateActionStateCount[triple] != 0:
+                # If you are in the state-action-state dict you are also in the state-action dict
+                self.UpdateTransition(triple, stateActionStateCount[triple], stateActionCount[(triple[0], triple[1])])
 
     def UpdateTransition(self, stateActionState, stateActionStateCount, stateActionCount):
-        self.transitionModel[(triple[0], triple[1], triple[2])] = stateActionStateCount / stateActionCount
+        self.transitionModel[(stateActionState[0], stateActionState[1], stateActionState[2])] = stateActionStateCount / stateActionCount
 
     def EvaluatePolicy(self, rewardDict, utilitiesDict, transitionModel, discountFactor, policy, validCells):
         updatedUtilities = utils.EvaluatePolicy(rewardDict, utilitiesDict, transitionModel, discountFactor, policy, validCells)
         return updatedUtilities
 
+    # TODO: Should previous action come from the input policy?
     def UpdatePreviousValues(self, isTerminalState, state):
         if isTerminalState:
             self.prevState = None

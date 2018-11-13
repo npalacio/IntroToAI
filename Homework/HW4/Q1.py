@@ -1,3 +1,6 @@
+from policyIteration import PolicyIterationAlgorithm
+from AdaptiveDynamicProgramming import AdaptiveDynamicProgrammingAlgorithm
+
 transitionDict = {
     'U': [
         {
@@ -65,11 +68,11 @@ config = {
             'obstacles': [(2,2)],
             'terminalCells': [
                 {
-                    'cell': (3,3),
+                    'cell': (4,3),
                     'value': 1
                 },
                 {
-                    'cell': (3,2),
+                    'cell': (4,2),
                     'value': -1
                 }
             ]
@@ -79,7 +82,7 @@ config = {
     'epochLimit': 1000
 }
 # Need to get the policy
-def GetWorld():
+def GetGridInfo():
     # TODO: Get from user
     return config['gridInfos'][0]
 
@@ -87,13 +90,15 @@ def GetAlgorithm():
     # TODO: Get from user
     return 0
 
-def GetPolicy():
-    print('Implement')
+def GetPolicy(rewardDict, transitionDict, discountFactor, gridInfo):
+    policyIteration = PolicyIterationAlgorithm(rewardDict, transitionDict, discountFactor, gridInfo)
+    results = policyIteration.Run()
+    return results['policy']
 
 def GetReward(cell, gridInfo):
     terminalCell = [cellObj for cellObj in gridInfo['terminalCells'] if cellObj['cell'] == cell]
     if len(terminalCell) > 0:
-        return terminalCell['value']
+        return terminalCell[0]['value']
     elif cell in gridInfo['obstacles']:
         return 'NA'
     return gridInfo['defaultValue']
@@ -108,13 +113,16 @@ def GetActualRewardDict(gridInfo):
     return rewardDict
 
 
-def Main():
+def Main(actualTransitionDict, discountFactor, epochLimit):
     # Get world from user
-    gridInfo = GetWorld()
+    gridInfo = GetGridInfo()
     # Get algorithm from user
     algorithm = GetAlgorithm()
     actualRewardDict = GetActualRewardDict(gridInfo)
     # Get policy for this world
-    policy = GetPolicy()
-    # Calculate utilities from algorithm and world
+    policy = GetPolicy(actualRewardDict, actualTransitionDict, discountFactor, gridInfo)
+    if algorithm == 0:
+        adp = AdaptiveDynamicProgrammingAlgorithm(policy, epochLimit, discountFactor, gridInfo, actualRewardDict, actualTransitionDict)
+        newPolicy = adp.Run()
 
+Main(transitionDict, config['discountFactor'], config['epochLimit'])
