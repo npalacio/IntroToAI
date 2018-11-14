@@ -31,7 +31,7 @@ class AdaptiveDynamicProgrammingAlgorithm:
             self.RunEpoch()
             iterationCount += 1
         # Once we finish learning we need to calculate policies from the utilties
-        policy = self.GetPolicy(self.utilityDict, self.actualTransitionModel, self.transitionModel, self.validCells)
+        policy = self.GetPolicy(self.utilityDict, self.actualTransitionModel, self.transitionModel, self.validGridCells)
         return policy
 
     def RunEpoch(self):
@@ -46,7 +46,7 @@ class AdaptiveDynamicProgrammingAlgorithm:
             if self.prevState != None:
                 # This is not a starting state, we came here from somewhere
                 self.UpdateTransitionModelData(self.prevState, self.prevAction, state)
-                self.UpdateTransitionModel(self.stateActionCount)
+                self.UpdateTransitionModel(self.stateActionStateCount, self.stateActionCount)
             self.utilityDict = self.EvaluatePolicy(self.rewardDict, self.utilityDict, self.transitionModel, self.discountFactor, self.policy, self.validGridCells)
             isTerminalState = self.IsTerminalState(state)
             self.UpdatePreviousValues(isTerminalState, state, self.policy[state])
@@ -64,8 +64,9 @@ class AdaptiveDynamicProgrammingAlgorithm:
         currTransitionValue = 0
         for transition in transitions:
             currTransitionValue += transition['probability']
-            if currTransitionValue > randomProbability:
+            if currTransitionValue >= randomProbability:
                 return utils.GetNextState(state, transition['action'], gridInfo, validCells)
+        print('should never be hit')
 
     def GetRandomStartingState(self, gridInfo):
         # terminalCells = [terminalCell['cell'] for terminalCell in gridInfo['terminalCells']]
@@ -75,6 +76,7 @@ class AdaptiveDynamicProgrammingAlgorithm:
             randCell = (randCol,randRow)
             if self.IsValidState(randCell, gridInfo):
                 return randCell
+        raise Exception('should never be hit')
 
     def IsValidState(self, state, gridInfo):
         terminalCells = [terminalCell['cell'] for terminalCell in gridInfo['terminalCells']]
@@ -89,25 +91,13 @@ class AdaptiveDynamicProgrammingAlgorithm:
         return len([terminalCell for terminalCell in self.gridInfo['terminalCells'] if terminalCell['cell'] == state]) > 0
 
     def InitializeStateActionCount(self):
-    # def InitializeStateActionCount(self, gridInfo, transitionDict):
-        # pairs = {}
-        # for state in self.gridCells:
-        #     if not self.IsValidState(state, gridInfo):
-        #         continue
-        #     for action in transitionDict:
-        #         pairs[(state, action)] = 0
-        # return pairs
         return {}
 
     def InitializeStateActionStateCount(self):
         return {}
-        # This will need to initialize state-action-resultingState triples for all neighboring states of a state
-        # TODO: Figure out how to intialize the triples without 800 dict keys
 
     def InitializeTransitionModel(self):
         return {}
-        # {(state, action, state): .78}
-        # TODO: How do I initialize the transition model? Set the actual move to a probability of 100%?
 
     def InitializeRewardDict(self, rewardableCells):
         rewardDict = {}
@@ -166,13 +156,13 @@ class AdaptiveDynamicProgrammingAlgorithm:
         updatedUtilities = utils.EvaluatePolicy(rewardDict, utilitiesDict, transitionModel, discountFactor, policy, validCells)
         return updatedUtilities
 
-    # TODO: Should previous action come from the input policy?
-    def UpdatePreviousValues(self, isTerminalState, state):
+    def UpdatePreviousValues(self, isTerminalState, state, action):
         if isTerminalState:
             self.prevState = None
             self.prevAction = None
         else:
             self.prevState = state
-            self.prevAction = self.policy[state]
-    def GetPolicy(utilitiesDict, transitionDict, transitionModel, validCells):
+            self.prevAction = action
+
+    def GetPolicy(self, utilitiesDict, transitionDict, transitionModel, validCells):
         return utils.GetPolicy(utilitiesDict, transitionDict, transitionModel, validCells)

@@ -6,7 +6,7 @@ def EvaluatePolicy(rewardDict, utilitiesDict, transitionModel, discountFactor, p
             continue
         action = policies[state]
         transitions = GetTransitionsFromModel(transitionModel, state, action)
-        x = GetBellmanPart2(state, rewardDict, utilitiesDict, transitions)
+        x = GetBellmanPart2(state, utilitiesDict, transitions)
         udpatedUtilities[state] = rewardDict[state] + discountFactor * x
     return udpatedUtilities
 
@@ -14,7 +14,7 @@ def EvaluatePolicy(rewardDict, utilitiesDict, transitionModel, discountFactor, p
 def GetTransitionsFromModel(transitionModel, state, action):
     return [(transition[2], transitionModel[transition]) for transition in transitionModel if transition[0] == state and transition[1] == action]
 
-def GetBellmanPart2(state, rewardDict, utilitiesDict, transitions):
+def GetBellmanPart2(state, utilitiesDict, transitions):
     x = []
     for transition in transitions:
         # transition = (resultingState, probability)
@@ -42,6 +42,7 @@ def GetNextState(state, action, gridInfo, validCells):
     return newState
 
 # Given our utilities, the transition frequencies we have seen and our grid, calculate the policy
+# TODO: Decide if we want to do this or greedy policy
 def GetPolicy(utilitiesDict, transitionDict, transitionModel, validCells):
     policy = {}
     for state in utilitiesDict:
@@ -52,10 +53,10 @@ def GetPolicy(utilitiesDict, transitionDict, transitionModel, validCells):
         actions = []
         for action in transitionDict:
             actions.append(action)
-            transitions = self.GetTransitionsFromModel(transitionModel, state, action)
+            transitions = GetTransitionsFromModel(transitionModel, state, action)
             # Since we only care about the action that maximizes the expected utility, 
             # the reward is constant and does not matter
-            xArray.append(self.GetBellmanPart2(state, utilitiesDict, transitions))
+            xArray.append(GetBellmanPart2(state, utilitiesDict, transitions))
         maxX = max(xArray)
         policy[state] = actions[xArray.index(maxX)]
     return policy

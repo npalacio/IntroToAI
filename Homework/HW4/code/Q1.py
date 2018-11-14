@@ -112,6 +112,13 @@ def GetActualRewardDict(gridInfo):
             rewardDict[cell] = reward
     return rewardDict
 
+def GetStartingState():
+    input('Please provide the starting state in the form of (column,row)')
+
+def RunSimulation(policy):
+    # Get starting point from user
+    startingState = GetStartingState()
+    # Follow policy until end
 
 def Main(actualTransitionDict, discountFactor, epochLimit):
     # Get world from user
@@ -121,8 +128,10 @@ def Main(actualTransitionDict, discountFactor, epochLimit):
     actualRewardDict = GetActualRewardDict(gridInfo)
     # Get policy for this world
     policy = GetPolicy(actualRewardDict, actualTransitionDict, discountFactor, gridInfo)
+    newPolicy = None
     if algorithm == 0:
         adp = AdaptiveDynamicProgrammingAlgorithm(policy, epochLimit, discountFactor, gridInfo, actualRewardDict, actualTransitionDict)
         newPolicy = adp.Run()
+    RunSimulation(newPolicy)
 
 Main(transitionDict, config['discountFactor'], config['epochLimit'])
