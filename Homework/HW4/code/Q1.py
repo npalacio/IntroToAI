@@ -79,6 +79,50 @@ config = {
                     'value': -1
                 }
             ]
+        },
+        {
+            'width': 10,
+            'height': 10,
+            'defaultValue': -.04,
+            'obstacles': [],
+            'terminalCells': [
+                {
+                    'cell': (5,5),
+                    'value': 1
+                }
+            ]
+        },
+        {
+            'width': 10,
+            'height': 10,
+            'defaultValue': -.04,
+            'obstacles': [(4, 4),(6, 4),(4, 6),(6, 6)],
+            'terminalCells': [
+                {
+                    'cell': (5,5),
+                    'value': 1
+                }
+            ]
+        },
+        {
+            'width': 10,
+            'height': 10,
+            'defaultValue': -.04,
+            'obstacles': [(4, 4),(6, 4),(4, 6),(6, 6)],
+            'terminalCells': [
+                {
+                    'cell': (5,5),
+                    'value': 1
+                },
+                {
+                    'cell': (5,7),
+                    'value': -1
+                },
+                {
+                    'cell': (4,5),
+                    'value': -1
+                }
+            ]
         }
     ],
     'discountFactor': .9,
@@ -86,28 +130,31 @@ config = {
 }
 # Need to get the policy
 def GetGridInfo(gridInfos):
-    print('Grid options:' + os.linesep)
-    print('\t1: 4 X 3 world with one obstacle in (2, 2), reward +1 at (4, 3) and -1 at (4, 2)' + os.linesep)
-    print('\t2: 10 X 10 world with no obstacles and reward +1 at (5, 5)' + os.linesep)
-    print('\t3: 10 X 10 world with four obstacles at (4, 4) (6, 4) (4, 6) (6, 6) and reward +1 at (5, 5)' + os.linesep)
-    print('\t4: 10 X 10 world with four obstacles at (4, 4) (6, 4) (4, 6) (6, 6) and reward +1 at (5, 5), reward -1 at (5, 7) and (4, 5)' + os.linesep)
+    print('Grid options:')
+    print('\t1: 4 X 3 world with one obstacle in (2, 2), reward +1 at (4, 3) and -1 at (4, 2)')
+    print('\t2: 10 X 10 world with no obstacles and reward +1 at (5, 5)')
+    print('\t3: 10 X 10 world with four obstacles at (4, 4) (6, 4) (4, 6) (6, 6) and reward +1 at (5, 5)')
+    print('\t4: 10 X 10 world with four obstacles at (4, 4) (6, 4) (4, 6) (6, 6) and reward +1 at (5, 5), reward -1 at (5, 7) and (4, 5)')
+    print('\t5: Exit')
     print('')
     done = False
-    validOptions = list(range(1,4))
+    validOptions = list(range(1,6))
     while not done:
         gridNum = int(input('Please choose your grid:' + os.linesep))
         done = gridNum in validOptions
         if not done:
             print('Invalid grid choice!')
-    return gridInfos[gridNum]
+    if gridNum == 5:
+        return None
+    return gridInfos[gridNum - 1]
 
 def GetAlgorithm():
-    print('Algorithm options:' + os.linesep)
-    print('\t1: Direct Utility Estimation' + os.linesep)
-    print('\t2: Adaptive Dynamic Programming' + os.linesep)
-    print('\t3: Temporal Difference' + os.linesep)
+    print('Algorithm options:')
+    print('\t1: Direct Utility Estimation')
+    print('\t2: Adaptive Dynamic Programming')
+    print('\t3: Temporal Difference')
     done = False
-    validOptions = list(range(1,3))
+    validOptions = list(range(1,4))
     while not done:
         algoNum = int(input('Please choose your algorithm:' + os.linesep))
         done = algoNum in validOptions
@@ -145,8 +192,9 @@ def GetStartingState(validCells):
         row = int(input('Please provide the starting row:' + os.linesep))
         state = (col,row)
         done = state in validCells
+        if not done:
+            print('Invalid starting state!')
     return state
-
 
 def RunSimulationFromStart(policy, startingState, gridInfo, validCells):
     done = False
@@ -176,10 +224,10 @@ def RunSimulation(policy, gridInfo):
 def PrintSequence(sequence):
     print(' --> '.join(sequence))
 
-def Main(actualTransitionDict, discountFactor, epochLimit):
+def Main(actualTransitionDict, discountFactor, epochLimit, gridInfos):
     while True:
         # Get world from user
-        gridInfo = GetGridInfo()
+        gridInfo = GetGridInfo(gridInfos)
         if gridInfo == None:
             sys.exit()
         # Get algorithm from user
@@ -189,9 +237,10 @@ def Main(actualTransitionDict, discountFactor, epochLimit):
         policy = GetPolicy(actualRewardDict, actualTransitionDict, discountFactor, gridInfo)
         newPolicy = None
         if algorithm == 2:
+            print('Running ADP algorithm...')
             adp = AdaptiveDynamicProgrammingAlgorithm(policy, epochLimit, discountFactor, gridInfo, actualRewardDict, actualTransitionDict)
             newPolicy = adp.Run()
         sequence = RunSimulation(newPolicy, gridInfo)
         PrintSequence(sequence)
 
-Main(transitionDict, config['discountFactor'], config['epochLimit'])
+Main(transitionDict, config['discountFactor'], config['epochLimit'], config['gridInfos'])
