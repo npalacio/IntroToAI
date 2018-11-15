@@ -11,9 +11,9 @@ class AdaptiveDynamicProgrammingAlgorithm:
         self.actualTransitionModel = actualTransitionModel
 
         # Static variables
-        self.gridCells = self.GetGridCells(self.gridInfo)
-        self.gridCellsMinusObstacles = self.GetGridCellsMinusObstacles(self.gridCells, self.gridInfo)
-        self.validGridCells = self.GetValidGridCells(self.gridCells, self.gridInfo)
+        self.gridCells = utils.GetGridCells(self.gridInfo)
+        self.gridCellsMinusObstacles = utils.GetGridCellsMinusObstacles(self.gridCells, self.gridInfo)
+        self.validGridCells = utils.GetValidGridCells(self.gridCells, self.gridInfo)
         self.prevState = None
         self.prevAction = None
         self.stateActionCount = self.InitializeStateActionCount()
@@ -110,20 +110,6 @@ class AdaptiveDynamicProgrammingAlgorithm:
         for state in gridCells:
             utilDict[state] = 0
         return utilDict
-
-    def GetGridCellsMinusObstacles(self, gridCells, gridInfo):
-        return [cell for cell in gridCells if cell not in gridInfo['obstacles']]
-
-    def GetValidGridCells(self, gridCells, gridInfo):
-        terminalCells = [cellObj['cell'] for cellObj in gridInfo['terminalCells']]
-        return [cell for cell in gridCells if cell not in gridInfo['obstacles'] and cell not in terminalCells]
-
-    def GetGridCells(self, gridInfo):
-        cells = []
-        for col in range(gridInfo['width']):
-            for row in range(gridInfo['height']):
-                cells.append((col + 1, row + 1))
-        return cells
 
     def UpdateStateReward(self, state, reward):
         self.rewardDict[state] = reward

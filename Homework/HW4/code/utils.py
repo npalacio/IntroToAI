@@ -61,3 +61,17 @@ def GetPolicy(utilitiesDict, transitionDict, transitionModel, validCells):
         policy[state] = actions[xArray.index(maxX)]
     return policy
 
+def GetGridCells(gridInfo):
+    cells = []
+    for col in range(gridInfo['width']):
+        for row in range(gridInfo['height']):
+            cells.append((col + 1, row + 1))
+    return cells
+
+def GetValidGridCells(gridCells, gridInfo):
+    terminalCells = [cellObj['cell'] for cellObj in gridInfo['terminalCells']]
+    return [cell for cell in gridCells if cell not in gridInfo['obstacles'] and cell not in terminalCells]
+
+def GetGridCellsMinusObstacles(gridCells, gridInfo):
+    return [cell for cell in gridCells if cell not in gridInfo['obstacles']]
+
