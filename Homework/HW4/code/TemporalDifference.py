@@ -4,7 +4,7 @@ import random
 class TemporalDifferenceAlgorithm:
     def __init__(self, policy, epochLimit, discountFactor, gridInfo, actualRewardDict, actualTransitionModel):
         self.policy = policy
-        self.epochLimit = epochLimit
+        self.epochLimit = epochLimit * 10
         # TODO: Decide if this is df
         self.discountFactor = 1
         self.gridInfo = gridInfo
