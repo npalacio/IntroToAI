@@ -3,7 +3,7 @@ import utils
 from QLearning import QLearningAlgorithm
 
 config = {
-    'epochLimit': 10000,
+    'epochLimit': 30000,
     'cpuPlayer': 2,
     'otherPlayer': 1,
     'defaultReward': -.04
@@ -94,7 +94,10 @@ def Main(epochLimit, defaultReward, cpuPlayer, otherPlayer):
     qAlgo = QLearningAlgorithm(epochLimit, defaultReward, cpuPlayer, otherPlayer)
     Q = qAlgo.Run()
     # Now I have the best action to take at every state
-    PlayTTT(Q, cpuPlayer, otherPlayer)
+    done = False
+    while not done:
+        PlayTTT(Q, cpuPlayer, otherPlayer)
+        done = input('Play again? Y/N:' + os.linesep) == 'N'
 
 # PrintState(GetStartingState())
 Main(config['epochLimit'], config['defaultReward'], config['cpuPlayer'], config['otherPlayer'])
