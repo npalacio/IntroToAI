@@ -68,4 +68,4 @@ class TemporalDifferenceAlgorithm:
         return currUtility + alpha * (reward + (discountFactor * nextStateUtlity) - currUtility)
 
     def GetAlpha(self, timesVisited):
-        return 1 / timesVisited
+        return 1 / (timesVisited + 1)

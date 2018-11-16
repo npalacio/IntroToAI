@@ -121,5 +121,5 @@ def SimulateTransition(state, transitions, gridInfo, validCells):
     for transition in transitions:
         currTransitionValue += transition['probability']
         if currTransitionValue >= randomProbability:
-            return utils.GetNextState(state, transition['action'], gridInfo, validCells)
+            return GetNextState(state, transition['action'], gridInfo, validCells)
     raise Exception("transition did not find right one")
