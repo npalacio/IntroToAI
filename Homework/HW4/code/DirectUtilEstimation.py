@@ -42,6 +42,10 @@ class DirectUtilEstimation:
         iterationCount = 0
         while iterationCount < self.epochLimit:
             self.RunEpoch(self.gridInfo)
+            iterationCount += 1
+        utilities = self.GetUtilities(self.startStateCount, self.startStateTotalReward)
+        policy = utils.GetGreedyPolicy(utilities, self.validGridCells, self.gridInfo, self.gridCellsMinusObstacles, self.actualTransitionModel)
+        return policy
         
     def RunEpoch(self):
         # Should be able to handle starting at terminal state
@@ -62,11 +66,7 @@ class DirectUtilEstimation:
         # startStateCount += 1
         self.startStateCount[startingState] += 1
         # startStateTotalReward += totalReward
-        self.startStateTotalReward[startingState] += 1
-    # utilities = get utlities using startStateCount and startStateTotalReward
-    utilities = self.GetUtilities(self.startStateCount, self.startStateTotalReward)
-    # policy = get greedy policy using utilities
-    # return policy
+        self.startStateTotalReward[startingState] += totalReward
 
     def SimulateTransition(self, state, transitions, gridInfo, validCells):
         randomProbability = random.randint(0,1000) / 1000
@@ -80,7 +80,9 @@ class DirectUtilEstimation:
     def GetUtilities(self, startStateCount, startStateTotalReward):
         utilities = {}
         for state in startStateCount:
-            
+            # TODO: Decide if we need to handle the case where we never started on a particular state?
+            utilities[state] = startStateTotalReward[state] / startStateCount[state]
+        return utilities
 
     def GetRandomStartingState(self, height, width, validStates):
         while True:

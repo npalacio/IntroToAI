@@ -75,3 +75,25 @@ def GetValidGridCells(gridCells, gridInfo):
 def GetGridCellsMinusObstacles(gridCells, gridInfo):
     return [cell for cell in gridCells if cell not in gridInfo['obstacles']]
 
+def GetGreedyPolicy(self, utilities, validGridCells, gridInfo, gridCellsMinusObstacles, transitionModel):
+    policy = {}
+    for state in utilities:
+        policyAtState = self.GetPolicyAtState(state, utilities, validGridCells, gridInfo, gridCellsMinusObstacles, transitionModel)
+        policy[state] = policyAtState
+    return policy
+
+def GetPolicyAtState(self, state, utilities, validGridCells, gridInfo, gridCellsMinusObstacles, transitionModel):
+    if state not in self.validGridCells:
+        return 'NA'
+    actionNeighborPairs = self.GetValidActionNeighborPairs(state, validGridCells, gridInfo, gridCellsMinusObstacles, transitionModel)
+    neighborUtils = [utilities[pair["neighbor"]] for pair in actionNeighborPairs]
+    maxIndex = neighborUtils.index(max(neighborUtils))
+    return actionNeighborPairs[maxIndex]["action"]
+
+def GetValidActionNeighborPairs(self, state, validGridCells, gridInfo, gridCellsMinusObstacles, transitionModel):
+    pairs = []
+    for action in transitionModel:
+        nextState = utils.GetNextState(state, action, gridInfo, gridCellsMinusObstacles)
+        if nextState != state:
+            pairs.append({"action": action, "neighbor": nextState})
+    return pairs
