@@ -1,3 +1,5 @@
+import random
+
 def EvaluatePolicy(rewardDict, utilitiesDict, transitionModel, discountFactor, policies, validCells):
     udpatedUtilities = {}
     for state in utilitiesDict:
@@ -97,3 +99,27 @@ def GetValidActionNeighborPairs(state, validGridCells, gridInfo, gridCellsMinusO
         if nextState != state:
             pairs.append({"action": action, "neighbor": nextState})
     return pairs
+
+def GetRandomStartingState(height, width, validStates):
+    while True:
+        randCol = random.randint(1, width)
+        randRow = random.randint(1, height)
+        randCell = (randCol,randRow)
+        if randCell in validStates:
+            return randCell
+    raise Exception('should never be hit in getting rand start state')
+
+def InitializeStateDict(states, value):
+    startStateCounts = {}
+    for state in states:
+        startStateCounts[state] = value
+    return startStateCounts
+
+def SimulateTransition(state, transitions, gridInfo, validCells):
+    randomProbability = random.randint(0,1000) / 1000
+    currTransitionValue = 0
+    for transition in transitions:
+        currTransitionValue += transition['probability']
+        if currTransitionValue >= randomProbability:
+            return utils.GetNextState(state, transition['action'], gridInfo, validCells)
+    raise Exception("transition did not find right one")

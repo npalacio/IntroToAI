@@ -3,6 +3,7 @@ import sys
 from policyIteration import PolicyIterationAlgorithm
 from AdaptiveDynamicProgramming import AdaptiveDynamicProgrammingAlgorithm
 from DirectUtilEstimation import DirectUtilEstimationAlgorithm
+from TemporalDifference import TemporalDifferenceAlgorithm
 import utils
 
 transitionDict = {
@@ -245,6 +246,10 @@ def Main(actualTransitionDict, discountFactor, epochLimit, gridInfos):
             print('Running ADP algorithm...')
             adp = AdaptiveDynamicProgrammingAlgorithm(policy, epochLimit, discountFactor, gridInfo, actualRewardDict, actualTransitionDict)
             newPolicy = adp.Run()
+        elif algorithm == 3:
+            print('Running TD algorithm...')
+            td = TemporalDifferenceAlgorithm(policy, epochLimit, discountFactor, gridInfo, actualRewardDict, actualTransitionDict)
+            newPolicy = td.Run()
         sequence = RunSimulation(newPolicy, gridInfo)
         PrintSequence(sequence)
 
