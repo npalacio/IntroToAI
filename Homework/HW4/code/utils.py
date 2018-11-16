@@ -162,3 +162,24 @@ def SimulateActionByPlayer(state, action, player):
     newState[action] = player
     # TODO: Simulate other player's action as well if not a terminal state?
     return tuple(newState)
+
+def GetNextTTTAction(state, Q):
+    # pick action a that maximizes Q(s,a)
+    availableActions = GetAvailableTTTActions(state)
+    qValues = GetQValues(state, availableActions, Q)
+    maxIndex = qValues.index(max(qValues))
+    return availableActions[maxIndex]
+
+def GetQValues(state, actions, Q):
+    qValues = []
+    for action in actions:
+        qValues.append(GetQValue(state, action, Q))
+    return qValues
+
+def GetQValue(state, action, Q):
+    state = tuple(state)
+    if (state,action) in Q:
+        return Q[(state,action)]
+    else:
+        return 0
+
