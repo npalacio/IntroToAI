@@ -124,8 +124,8 @@ def SimulateTransition(state, transitions, gridInfo, validCells):
             return GetNextState(state, transition['action'], gridInfo, validCells)
     raise Exception("transition did not find right one")
 
-def GetAvailableTTTActions(state, player):
-    return [index for index in range(len(state)) if state[index] == player]
+def GetAvailableTTTActions(state):
+    return [index for index in range(len(state)) if state[index] == 0]
 
 def GetTTTWinningIndexArrays():
     winningIndexArrays = [[0,4,8],[2,4,6],[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8]]
@@ -140,10 +140,25 @@ def GetTTTWinner(terminalState):
         player2Arr = [index for index in indexArray if terminalState[index] == 2]
         player2Wins = len(player2Arr) == 3
         if player1Wins and player2Wins:
-            raise Exception("Both players cannot win"):
+            raise Exception("Both players cannot win")
         elif player1Wins:
             return 1
         elif player2Wins:
             return 2
     # If neither player matched to a winning array
     return None
+
+def IsTerminalTTTState(state):
+    allCellsFilled = 0 not in state
+    winnerExists = GetTTTWinner(state) != None
+    isTerminal = allCellsFilled or winnerExists
+    return isTerminal
+
+def GetTTTStartingState():
+    return [0 for i in range(9)]
+
+def SimulateActionByPlayer(state, action, player):
+    newState = list(state)
+    newState[action] = player
+    # TODO: Simulate other player's action as well if not a terminal state?
+    return tuple(newState)

@@ -3,17 +3,17 @@ import random
 
 class QLearningAlgorithm:
 
-    def __init__(self, epochLimit, defaultReward, terminalStates):
+    def __init__(self, epochLimit, defaultReward):
         # Q(x,y) needs to be initialized somehow? Or we use a default value whenever it is undefined?
         self.epochLimit = epochLimit
         self.defaultReward = defaultReward
-        self.terminalStates = terminalStates
 
         self.Q = self.InitializeQ()
         self.rewards = {}
         self.stateLength = 9
         self.cellValues = [0,1,2]
         self.cpuPlayer = 2
+        self.otherPlayer = 1
         self.discountFactor = 1
         self.stateVisitedCount = {}
     
@@ -47,28 +47,54 @@ class QLearningAlgorithm:
             else:
                 self.stateVisitedCount[state] = 1
             action = self.GetNextAction(state, self.Q)
-            nextState = self.SimulateAction(state, action)
-            nextStateReward = self.GetReward(nextState, self.defaultReward)
-            # What is the reward at any state? -.04 except for terminal states
-            self.Q[(state,action)] = self.GetUpdatedQValue(state, action, nextState, Q, self.stateVisitedCount, self.defaultReward, self.discountFactor)
+            nextState = utils.SimulateActionByPlayer(state, action, self.cpuPlayer)
+            if not utils.IsTerminalTTTState(nextState):
+                nextState = self.SimulateRandomActionByPlayer(nextState, self.otherPlayer)
+            nextStateReward = self.GetReward(nextState, self.defaultReward, self.cpuPlayer)
+            self.Q[(state,action)] = self.GetUpdatedQValue(state, action, nextState, self.Q, self.stateVisitedCount[state], nextStateReward, self.discountFactor)
             state = nextState
-            done = state in self.terminalStates
+            done = utils.IsTerminalTTTState(state)
 
     def InitializeQ(self):
         return {}
 
     def GetRandomStartingState(self, stateLength, cellValues):
-        while True:
-            state = []
-            for cellIndex in range(stateLength):
-                randomCellValue = self.GetRandomCellValue(cellValues)
-                state[cellIndex] = randomCellValue
-            if state not in self.terminalStates:
-                return state
+        state = []
+        turns = random.randint(0,4)
+        done = False    
+        while not done:
+            done = True
+            state = utils.GetTTTStartingState()
+            for turnCount in range(turns):
+                if not utils.IsTerminalTTTState(state):
+                    randomAction = self.GetRandomAction(state)
+                    state = list(utils.SimulateActionByPlayer(state, randomAction, self.cpuPlayer))
+                else:
+                    # This is a terminal state, will not work
+                    done = False
+                    continue
+                if not utils.IsTerminalTTTState(state):
+                    randomAction = self.GetRandomAction(state)
+                    state = list(utils.SimulateActionByPlayer(state, randomAction, self.otherPlayer))
+                else:
+                    # This is a terminal state, will not work
+                    done = False
+                    continue
+        return tuple(state)
+    
+    def SimulateRandomActionByPlayer(self, state, player):
+        randomAction = self.GetRandomAction(state)
+        state = utils.SimulateActionByPlayer(state, randomAction, player)
+        return state
 
     def GetRandomCellValue(self, cellValues):
-        randomIndex = random.randint(0,len(cellValues))
+        randomIndex = random.randint(0,len(cellValues) - 1)
         return cellValues[randomIndex]
+
+    def GetRandomAction(self, state):
+        availableActions = utils.GetAvailableTTTActions(state)
+        randomActionIndex = random.randint(0,len(availableActions) - 1)
+        return availableActions[randomActionIndex]
 
     def GetNextAction(self, state, Q):
         # pick action a that maximizes Q(s,a)
@@ -90,14 +116,9 @@ class QLearningAlgorithm:
         else:
             return 0
 
-    def SimulateAction(self, state, action, player):
-        newState = state.copy()
-        newState[action] = player
-        return newState
-
-    def GetReward(self, state, defaultReward):
-        if state in self.terminalStates:
-            return self.GetTerminalStateReward(state)
+    def GetReward(self, state, defaultReward, player):
+        if utils.IsTerminalTTTState(state):
+            return self.GetTerminalStateReward(state, player)
         else:
             return defaultReward
 
@@ -111,10 +132,12 @@ class QLearningAlgorithm:
         else:
             return -1
 
-    def GetUpdatedQValue(self, Q, state, action, nextState, timesVisited, defaultReward, discountFactor):
-        bestActionAtNextState = self.GetNextAction(nextState, Q)
-        nextStateBestQValue = self.GetQValue(state, bestActionAtNextState, Q)
-        nextStateReward = self.GetReward(state, defaultReward)
+    def GetUpdatedQValue(self, state, action, nextState, Q, timesVisited, nextStateReward, discountFactor):
+        # If nextState is a terminal state, best action does not matter, use 0? yes, reward will already be -1,1,0
+        nextStateBestQValue = 0
+        if not utils.IsTerminalTTTState(nextState):
+            bestActionAtNextState = self.GetNextAction(nextState, Q)
+            nextStateBestQValue = self.GetQValue(state, bestActionAtNextState, Q)
         alpha = self.GetAlpha(timesVisited)
         currQValue = self.GetQValue(state, action)
         return currQValue + alpha * (nextStateReward + nextStateBestQValue - currQValue)
