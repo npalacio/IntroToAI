@@ -2,6 +2,7 @@ import os
 import sys
 from policyIteration import PolicyIterationAlgorithm
 from AdaptiveDynamicProgramming import AdaptiveDynamicProgrammingAlgorithm
+from DirectUtilEstimation import DirectUtilEstimationAlgorithm
 import utils
 
 transitionDict = {
@@ -236,7 +237,11 @@ def Main(actualTransitionDict, discountFactor, epochLimit, gridInfos):
         # Get policy for this world
         policy = GetPolicy(actualRewardDict, actualTransitionDict, discountFactor, gridInfo)
         newPolicy = None
-        if algorithm == 2:
+        if algorithm == 1:
+            print('Running DUE algorithm...')
+            due = DirectUtilEstimationAlgorithm(policy, epochLimit, gridInfo, actualRewardDict, actualTransitionDict)
+            newPolicy = due.Run()
+        elif algorithm == 2:
             print('Running ADP algorithm...')
             adp = AdaptiveDynamicProgrammingAlgorithm(policy, epochLimit, discountFactor, gridInfo, actualRewardDict, actualTransitionDict)
             newPolicy = adp.Run()

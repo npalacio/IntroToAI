@@ -1,11 +1,10 @@
 import utils
 import random
 
-class DirectUtilEstimation:
-    def __init__(self, policy, epochLimit, discountFactor, gridInfo, actualRewardDict, actualTransitionModel):
+class DirectUtilEstimationAlgorithm:
+    def __init__(self, policy, epochLimit, gridInfo, actualRewardDict, actualTransitionModel):
         self.policy = policy
-        self.epochLimit = epochLimit
-        self.discountFactor = discountFactor
+        self.epochLimit = epochLimit * 10
         self.gridInfo = gridInfo
         self.actualRewardDict = actualRewardDict
         self.actualTransitionModel = actualTransitionModel
@@ -41,7 +40,7 @@ class DirectUtilEstimation:
     def Run(self):
         iterationCount = 0
         while iterationCount < self.epochLimit:
-            self.RunEpoch(self.gridInfo)
+            self.RunEpoch()
             iterationCount += 1
         utilities = self.GetUtilities(self.startStateCount, self.startStateTotalReward)
         policy = utils.GetGreedyPolicy(utilities, self.validGridCells, self.gridInfo, self.gridCellsMinusObstacles, self.actualTransitionModel)
