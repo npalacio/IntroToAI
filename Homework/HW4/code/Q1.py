@@ -257,7 +257,7 @@ def Main(actualTransitionDict, discountFactor, epochLimit, gridInfos):
         actualRewardDict = GetActualRewardDict(gridInfo)
         # Get policy for this world
         policy = GetPolicy(actualRewardDict, actualTransitionDict, discountFactor, gridInfo)
-        PrintPolicy(policy, gridInfo)
+        # PrintPolicy(policy, gridInfo)
         newPolicy = None
         # print('Algorithm starting at ' + time.strftime("%H:%M:%S"))
         if algorithm == 1:
