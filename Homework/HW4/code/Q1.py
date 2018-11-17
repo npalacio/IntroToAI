@@ -1,7 +1,8 @@
 import os
 import sys
 import time
-from policyIteration import PolicyIterationAlgorithm
+# from policyIteration import PolicyIterationAlgorithm
+from valueIteration import ValueIterationAlgorithm
 from AdaptiveDynamicProgramming import AdaptiveDynamicProgrammingAlgorithm
 from DirectUtilEstimation import DirectUtilEstimationAlgorithm
 from TemporalDifference import TemporalDifferenceAlgorithm
@@ -166,8 +167,10 @@ def GetAlgorithm():
     return algoNum
 
 def GetPolicy(rewardDict, transitionDict, discountFactor, gridInfo):
-    policyIteration = PolicyIterationAlgorithm(rewardDict, transitionDict, discountFactor, gridInfo)
-    results = policyIteration.Run()
+    # policyIteration = PolicyIterationAlgorithm(rewardDict, transitionDict, discountFactor, gridInfo)
+    # results = policyIteration.Run()
+    valueIteration = ValueIterationAlgorithm(rewardDict, transitionDict, discountFactor, gridInfo)
+    results = valueIteration.Run()
     return results['policy']
 
 def GetReward(cell, gridInfo):
@@ -254,7 +257,7 @@ def Main(actualTransitionDict, discountFactor, epochLimit, gridInfos):
         actualRewardDict = GetActualRewardDict(gridInfo)
         # Get policy for this world
         policy = GetPolicy(actualRewardDict, actualTransitionDict, discountFactor, gridInfo)
-        # PrintPolicy(policy, gridInfo)
+        PrintPolicy(policy, gridInfo)
         newPolicy = None
         # print('Algorithm starting at ' + time.strftime("%H:%M:%S"))
         if algorithm == 1:
