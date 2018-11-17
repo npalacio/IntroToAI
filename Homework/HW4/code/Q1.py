@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 from policyIteration import PolicyIterationAlgorithm
 from AdaptiveDynamicProgramming import AdaptiveDynamicProgrammingAlgorithm
 from DirectUtilEstimation import DirectUtilEstimationAlgorithm
@@ -226,6 +227,22 @@ def RunSimulation(policy, gridInfo):
 def PrintSequence(sequence):
     print(' --> '.join(sequence))
 
+def PrintPolicy(policy, gridInfo):
+    gridTextArr = []
+    cellWidth = 10
+    for row in range(gridInfo['height']):
+        row += 1
+        rowTextArr = []
+        for col in range(gridInfo['width']):
+            col += 1
+            cell = (col,row)
+            cellText = str(cell) + '=' + policy[cell]
+            rowTextArr.append(cellText.center(cellWidth,' '))
+        gridTextArr.append('|'.join(rowTextArr))
+    rowSeparator = os.linesep + ('-' * ((cellWidth * 10) + 9)) +  os.linesep
+    print(rowSeparator.join(reversed(gridTextArr)))
+    
+
 def Main(actualTransitionDict, discountFactor, epochLimit, gridInfos):
     while True:
         # Get world from user
@@ -236,8 +253,11 @@ def Main(actualTransitionDict, discountFactor, epochLimit, gridInfos):
         algorithm = GetAlgorithm()
         actualRewardDict = GetActualRewardDict(gridInfo)
         # Get policy for this world
+        # for i in range(5):
         policy = GetPolicy(actualRewardDict, actualTransitionDict, discountFactor, gridInfo)
+        PrintPolicy(policy, gridInfo)
         newPolicy = None
+        print('Algorithm starting at ' + time.strftime("%H:%M:%S"))
         if algorithm == 1:
             print('Running DUE algorithm...')
             due = DirectUtilEstimationAlgorithm(policy, epochLimit, gridInfo, actualRewardDict, actualTransitionDict)
@@ -250,6 +270,7 @@ def Main(actualTransitionDict, discountFactor, epochLimit, gridInfos):
             print('Running TD algorithm...')
             td = TemporalDifferenceAlgorithm(policy, epochLimit, discountFactor, gridInfo, actualRewardDict, actualTransitionDict)
             newPolicy = td.Run()
+        print('Algorithm ending at ' + time.strftime("%H:%M:%S"))
         sequence = RunSimulation(newPolicy, gridInfo)
         PrintSequence(sequence)
 

@@ -4,7 +4,8 @@ import random
 class AdaptiveDynamicProgrammingAlgorithm:
     def __init__(self, policy, epochLimit, discountFactor, gridInfo, actualRewardDict, actualTransitionModel):
         self.policy = policy
-        self.epochLimit = epochLimit
+        # self.epochLimit = epochLimit
+        self.epochLimit = 300
         self.discountFactor = discountFactor
         self.gridInfo = gridInfo
         self.actualRewardDict = actualRewardDict
@@ -31,7 +32,8 @@ class AdaptiveDynamicProgrammingAlgorithm:
             self.RunEpoch()
             iterationCount += 1
         # Once we finish learning we need to calculate policies from the utilties
-        policy = self.GetPolicy(self.utilityDict, self.actualTransitionModel, self.transitionModel, self.validGridCells)
+        # policy = self.GetPolicy(self.utilityDict, self.actualTransitionModel, self.transitionModel, self.validGridCells)
+        policy = utils.GetGreedyPolicy(self.utilityDict, self.validGridCells, self.gridInfo, self.gridCellsMinusObstacles, self.actualTransitionModel)
         return policy
 
     def RunEpoch(self):
