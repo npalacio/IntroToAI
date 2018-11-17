@@ -253,11 +253,10 @@ def Main(actualTransitionDict, discountFactor, epochLimit, gridInfos):
         algorithm = GetAlgorithm()
         actualRewardDict = GetActualRewardDict(gridInfo)
         # Get policy for this world
-        # for i in range(5):
         policy = GetPolicy(actualRewardDict, actualTransitionDict, discountFactor, gridInfo)
-        PrintPolicy(policy, gridInfo)
+        # PrintPolicy(policy, gridInfo)
         newPolicy = None
-        print('Algorithm starting at ' + time.strftime("%H:%M:%S"))
+        # print('Algorithm starting at ' + time.strftime("%H:%M:%S"))
         if algorithm == 1:
             print('Running DUE algorithm...')
             due = DirectUtilEstimationAlgorithm(policy, epochLimit, gridInfo, actualRewardDict, actualTransitionDict)
@@ -270,7 +269,7 @@ def Main(actualTransitionDict, discountFactor, epochLimit, gridInfos):
             print('Running TD algorithm...')
             td = TemporalDifferenceAlgorithm(policy, epochLimit, discountFactor, gridInfo, actualRewardDict, actualTransitionDict)
             newPolicy = td.Run()
-        print('Algorithm ending at ' + time.strftime("%H:%M:%S"))
+        # print('Algorithm ending at ' + time.strftime("%H:%M:%S"))
         sequence = RunSimulation(newPolicy, gridInfo)
         PrintSequence(sequence)
 
