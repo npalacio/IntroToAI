@@ -49,9 +49,16 @@ def CalculateFlightDataHour(row):
 
 def DropDuplicates(df, columns):
     rowCountBefore = df.shape[0]
-    df.drop_duplicates(keep='first' subset=columns, inplace=True)
+    df.drop_duplicates(keep='first', subset=columns, inplace=True)
     rowCountAfter = df.shape[0]
     print('Deleted ' + str(rowCountBefore - rowCountAfter) + ' duplicate rows')
+
+def FillInMissingNumericValues(df, columnName, defaultValue):
+    rowCountBefore = df.loc[(df[columnName].isnull())].shape[0]
+    df[columnName].fillna(defaultValue, inplace=True)
+    rowCountAfter = df.loc[(df[columnName].isnull())].shape[0]
+    print('Filled in ' + str(rowCountBefore - rowCountAfter) + ' missing values for ' + columnName)
+
 # def CalculateWeatherDataHour(row):
 #     year = str(row['Year'])
 #     month = '%02d' % int(row['Month'])
