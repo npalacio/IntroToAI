@@ -1,6 +1,9 @@
 import math
+import numpy as np
 from datetime import datetime
 from datetime import timedelta
+
+from sklearn import metrics
 
 def FilterColumns(df, columns):
     return df.filter(items=columns)
@@ -59,14 +62,8 @@ def FillInMissingNumericValues(df, columnName, defaultValue):
     rowCountAfter = df.loc[(df[columnName].isnull())].shape[0]
     print('Filled in ' + str(rowCountBefore - rowCountAfter) + ' missing values for ' + columnName)
 
-# def CalculateWeatherDataHour(row):
-#     year = str(row['Year'])
-#     month = '%02d' % int(row['Month'])
-#     day = '%02d' % int(row['Day'])
-#     time = row['Time']
-#     minutes = '%02d' % (time % 100)
-#     hour = '%02d' % str(int(math.ceil(time / 100.0)))
-#     # dateTime = datetime.strptime('2013 04 03 20 46 UTC', '%Y %m %d %H %M %Z')
-#     dateTimeString = year + ' ' + month + ' ' + day + ' ' + 
-#     dateTime = datetime.strptime('2013 04 03 20 46 UTC', '%Y %m %d %H %M %Z')
-#     return hour
+def UpdateComparisonDict(comparisonDict, testingLabelData, predictedLabelData):
+    comparisonDict['MeanAbsErr'].append(metrics.mean_absolute_error(testingLabelData, predictedLabelData))
+    comparisonDict['MeanSquErr'].append(metrics.mean_squared_error(testingLabelData, predictedLabelData))
+    comparisonDict['RootMeanSquErr'].append(np.sqrt(metrics.mean_squared_error(testingLabelData, predictedLabelData)))
+    return comparisonDict
