@@ -4,3 +4,5 @@ Slides/*
 **/Work/*.csv
 *.pdf
 **/__pycache__
+**/GoogleColabFiles/*
+*.zip
