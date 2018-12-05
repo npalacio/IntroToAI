@@ -42,6 +42,22 @@ def ConvertToNumeric(row, column, valuesToHandle, defaultValue):
         value = defaultValue
     return float(value)
 
+def UpdateTimeDict(row, timeDict):
+    dateTime = GetDateTime(row)
+    timeDict['Year'].append(dateTime.year)
+    timeDict['Month'].append(dateTime.month)
+    timeDict['Day'].append(dateTime.day)
+    timeDict['Hour'].append(dateTime.hour)
+
+def UpdateWeatherDataTimeFields(df):
+    timeDict = {'Year': [], 'Month': [], 'Day': [], 'Hour': []}
+    df.apply(lambda row: UpdateTimeDict(row, timeDict),axis=1)
+    df['Year'] = pd.Series(timeDict['Year'])
+    df['Month'] = pd.Series(timeDict['Month'])
+    df['Day'] = pd.Series(timeDict['Day'])
+    df['Hour'] = pd.Series(timeDict['Hour'])
+    return df
+
 def CalculateWeatherDataYear(row):
     dateTime = GetDateTime(row)
     return dateTime.year
@@ -91,11 +107,3 @@ def UpdateComparisonDict(comparisonDict, testingLabelData, predictedLabelData):
     comparisonDict['MeanSquErr'].append(metrics.mean_squared_error(testingLabelData, predictedLabelData))
     comparisonDict['RootMeanSquErr'].append(np.sqrt(metrics.mean_squared_error(testingLabelData, predictedLabelData)))
     return comparisonDict
-
-weatherData = pd.read_csv('./Weather Data.csv', nrows=100)
-colInfoDict = [{
-    'name': 'Visibility',
-    'valuesToHandle': ['M'],
-    'defaultValue': 0
-}]
-ConvertColumnsToNumeric(weatherData, colInfoDict)
